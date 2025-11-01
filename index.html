@@ -27748,13 +27748,17 @@
                 const totalGrossProfit = totalAmount - totalCost + totalAdjCost;
                 const totalGrossMargin = totalAmount > 0 ? (totalGrossProfit / totalAmount) * 100 : 0;
 
+                // 計算周邊業績 = Accy + AirPods + Audio + 3rd Party 的未稅金額
+                const accessoriesRevenue = stats['Accy'].amount + stats['AirPods'].amount + stats['Audio'].amount + stats['3rd Party'].amount;
+
                 displayResults(stats, {
                     quantity: totalQuantity,
                     amount: totalAmount,
                     cost: totalCost,
                     adj_cost: totalAdjCost,
                     gross_profit: totalGrossProfit,
-                    gross_margin: totalGrossMargin
+                    gross_margin: totalGrossMargin,
+                    accessories_revenue: accessoriesRevenue
                 });
             } catch (err) {
                 showError('❌ 處理資料時發生錯誤: ' + err.message);
@@ -27803,6 +27807,10 @@
                 <div class="total-item">
                     <div class="total-label">總數量</div>
                     <div class="total-value">${totals.quantity.toLocaleString()}</div>
+                </div>
+                <div class="total-item">
+                    <div class="total-label">🔌 周邊業績</div>
+                    <div class="total-value">NT$ ${totals.accessories_revenue.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">總未稅金額</div>
