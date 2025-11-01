@@ -55,7 +55,7 @@
         .upload-area {
             border: 3px dashed #cbd5e0;
             border-radius: 20px;
-            padding: 50px;
+            padding: 35px;
             text-align: center;
             margin-bottom: 30px;
             cursor: pointer;
@@ -97,8 +97,8 @@
         }
 
         .upload-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 48px;
+            margin-bottom: 15px;
             position: relative;
             z-index: 1;
             animation: float 3s ease-in-out infinite;
@@ -27784,13 +27784,13 @@
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">未稅金額</span>
-                            <span class="stat-value">NT$ ${stat.amount.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                            <span class="stat-value">${stat.amount.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-highlight">
                             <div class="stat-row">
                                 <span class="stat-label">💰 毛利額</span>
-                                <span class="stat-value">NT$ ${stat.gross_profit.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                <span class="stat-value">${stat.gross_profit.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                             </div>
                             <div class="stat-row">
                                 <span class="stat-label">📊 毛利率</span>
@@ -27810,15 +27810,15 @@
                 </div>
                 <div class="total-item">
                     <div class="total-label">🔌 周邊業績</div>
-                    <div class="total-value">NT$ ${totals.accessories_revenue.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    <div class="total-value">${totals.accessories_revenue.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">總未稅金額</div>
-                    <div class="total-value">NT$ ${totals.amount.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    <div class="total-value">${totals.amount.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">💰 總毛利額</div>
-                    <div class="total-value">NT$ ${totals.gross_profit.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    <div class="total-value">${totals.gross_profit.toLocaleString('zh-TW', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                 </div>
                 <div class="total-item">
                     <div class="total-label">📊 總毛利率</div>
