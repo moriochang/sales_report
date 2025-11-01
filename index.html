@@ -45,17 +45,11 @@
         }
 
         h1 {
+            color: #2d3748;
             margin-bottom: 35px;
             text-align: center;
             font-size: 36px;
             font-weight: 800;
-        }
-
-        h1 .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .upload-area {
@@ -446,7 +440,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 <span class="gradient-text">台數業績統計</span></h1>
+        <h1>📊 台數業績統計</h1>
         
         <div class="info-badge">
             ✨ 使用 Product Code 精準比對 · 支援 27,112 項產品 · 即時業績分析
@@ -27730,10 +27724,13 @@
                     stats[category].adj_cost += adj_cost;
                     stats[category].gross_profit += gross_profit;
                     
-                    totalQuantity += quantity;
-                    totalAmount += amount;
-                    totalCost += cost;
-                    totalAdjCost += adj_cost;
+                    // 總計排除 Care 分類
+                    if (category !== 'Care') {
+                        totalQuantity += quantity;
+                        totalAmount += amount;
+                        totalCost += cost;
+                        totalAdjCost += adj_cost;
+                    }
 
                     console.log(`✓ ${productName} (Code: ${productCode}) → ${category}`);
                 });
