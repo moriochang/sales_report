@@ -615,6 +615,32 @@ function parseData(raw) {
     return;
   }
 
+  /* Find the qty column for the target store in the sec2 header row.
+     The header row lists store names starting around col 21.
+     We look for the column whose value matches storeName, then qty is at that col + 8
+     (store header col → qty col offset is 8, same as single-store layout at col 21→30 = +9? 
+     Actually for single store: storeName at col 21 but qty was at 30 = +9.
+     For multi-store: 77 at col 21, qty at col 21+0 = qty col under that store.
+     Let's find the store col in sec2 header and then qty = storeCol + 9 for 銷售數量.
+  */
+  var sec2HeaderRow = raw[sec2Start] || [];
+  var qtyCol = 30; /* default for single-store reports */
+  for (var ci = 0; ci < sec2HeaderRow.length; ci++) {
+    var cellVal = sec2HeaderRow[ci] ? String(sec2HeaderRow[ci]).trim() : '';
+    if (cellVal === storeName) {
+      /* qty (銷售數量) is the first sub-column under the store, which is at storeCol + 0
+         but sub-header row (sec2Start+1) has '銷售數量' at storeCol offset.
+         From observation: store col = 21, qty col = 21+9? No — let's check sub-header */
+      var subRow = raw[sec2Start + 1] || [];
+      /* scan right from ci to find first '銷售數量' */
+      for (var si = ci; si < ci + 15; si++) {
+        var sv = subRow[si] ? String(subRow[si]).trim() : '';
+        if (sv === '銷售數量') { qtyCol = si; break; }
+      }
+      break;
+    }
+  }
+
   /* Parse from sec2Start + 2 (skip header + sub-header row) */
   var curId   = null;
   var curDate = null;
@@ -646,7 +672,7 @@ function parseData(raw) {
     var c3        = gStr(row, 13);
     var shortName = gStr(row, 17);
     var prodCode  = gStr(row, 15);
-    var qty       = gNum(row, 30);
+    var qty       = gNum(row, qtyCol);
 
     /* 小分類(col13)有時為空（Excel同中分類下第二個品項不填），
        改用 Product Code 判斷這筆是否有效，小分類空時用 Short Name 補 */
