@@ -1194,15 +1194,15 @@ function renderExport() {
       var care = dayRows.filter(function(r){ return r.c1==='Care'; }).reduce(function(s,r){ return s+r.qty; }, 0);
       totalCpu += cpu; totalIpad += ipad; totalCare += care;
       var red = isRed(d);
-      var dateStyle = red ? 'color:#f87171;font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis' : 'color:var(--muted);font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      var dateStyle = red ? 'color:#f87171;font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis' : 'color:#cbd5e1;font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
       var qw = dateQW(d);
       return '<tr>'
         + '<td style="' + dateStyle + '">' + dateLabel(d) + '</td>'
-        + '<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">' + qw.q + '</td>'
-        + '<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">' + qw.w + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;' + (cpu  > 0 ? 'color:var(--cpu)'  : 'color:var(--muted)') + '">' + cpu  + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;' + (ipad > 0 ? 'color:var(--ipad)' : 'color:var(--muted)') + '">' + ipad + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;' + (care > 0 ? 'color:var(--care)' : 'color:var(--muted)') + '">' + care + '</td>'
+        + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.q + '</td>'
+        + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.w + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;' + (cpu  > 0 ? 'color:var(--cpu)'  : 'color:#cbd5e1') + '">' + cpu  + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;' + (ipad > 0 ? 'color:var(--ipad)' : 'color:#cbd5e1') + '">' + ipad + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;' + (care > 0 ? 'color:var(--care)' : 'color:#cbd5e1') + '">' + care + '</td>'
         + '</tr>';
     }).join('')
     + '<tr style="border-top:2px solid var(--border);font-weight:700">'
