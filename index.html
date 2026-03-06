@@ -102,6 +102,78 @@ body::before {
   color: #fca5a5;
 }
 
+/* Drive loader */
+.drive-section {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.drive-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.drive-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.drive-url-input {
+  flex: 1;
+  min-width: 240px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 12px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  outline: none;
+  transition: border-color .15s;
+}
+.drive-url-input:focus { border-color: var(--accent); }
+.drive-url-input::placeholder { color: var(--muted); }
+.drive-load-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #1a73e8;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background .18s, opacity .18s;
+  font-family: 'Noto Sans TC', sans-serif;
+  white-space: nowrap;
+}
+.drive-load-btn:hover    { background: #1557b0; }
+.drive-load-btn:disabled { opacity: .5; cursor: not-allowed; }
+.drive-status {
+  margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  min-height: 16px;
+}
+.drive-status.ok  { color: #34d399; }
+.drive-status.err { color: #f87171; }
+.drive-help {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.drive-help a { color: var(--accent); text-decoration: none; }
+.drive-help a:hover { text-decoration: underline; }
+
 #results { display: none; margin-top: 40px; }
 
 .section-title {
@@ -408,6 +480,25 @@ tr:hover td { background: rgba(91,127,255,.04); }
 
   <div class="err" id="err"></div>
 
+  <!-- Google Drive 自動載入 -->
+  <div class="drive-section">
+    <div class="drive-section-title">FROM GOOGLE DRIVE · Apps Script Web App</div>
+    <div class="drive-row">
+      <input class="drive-url-input" id="driveWebAppUrl" type="text"
+        placeholder="貼上 Apps Script Web App URL…"
+        oninput="saveDriveUrl(this.value)">
+      <button class="drive-load-btn" id="driveLoadBtn" onclick="loadFromDrive()">
+        <span>☁</span> 從 Drive 載入
+      </button>
+    </div>
+    <div class="drive-status" id="driveStatus"></div>
+    <div class="drive-help">
+      ① 將 Apps Script 部署為 Web App（執行身分：我、存取：任何人）<br>
+      ② 複製 Web App URL 貼到上方輸入框，之後會自動記住<br>
+      ③ 點「從 Drive 載入」即可自動抓取最新 5 家店報表
+    </div>
+  </div>
+
   <div id="results">
     <div class="section-title">STORE</div>
     <div id="store-chips" class="chips" style="margin-bottom:20px"></div>
@@ -534,10 +625,10 @@ tr:hover td { background: rgba(91,127,255,.04); }
  */
 
 /* ── Multi-store state ── */
-var storeDataMap = {};  /* { storeName: [rows] } */
-var storeOrder   = [];  /* ordered store names as loaded */
-var curStore     = null; /* null = 全部 */
-var allRows      = [];   /* rows for current store selection */
+var storeDataMap = {};
+var storeOrder   = [];
+var curStore     = null;
+var allRows      = [];
 var storeName    = '';
 var curStaff  = null;
 var curFilter = 'all';
@@ -545,6 +636,66 @@ var CATS = ['CPU', 'iPad', 'Care'];
 var colFilters = {};
 var sortCol    = null;
 var sortDir    = 1;
+
+/* ── Google Drive loader ── */
+(function() {
+  var saved = localStorage.getItem('driveWebAppUrl');
+  if (saved) {
+    var el = document.getElementById('driveWebAppUrl');
+    if (el) el.value = saved;
+  }
+})();
+
+function saveDriveUrl(val) {
+  try { localStorage.setItem('driveWebAppUrl', val.trim()); } catch(e) {}
+}
+
+function setDriveStatus(msg, cls) {
+  var el = document.getElementById('driveStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'drive-status' + (cls ? ' ' + cls : '');
+}
+
+function loadFromDrive() {
+  var url = (document.getElementById('driveWebAppUrl').value || '').trim();
+  if (!url) { setDriveStatus('請先貼上 Web App URL', 'err'); return; }
+
+  var btn = document.getElementById('driveLoadBtn');
+  btn.disabled = true;
+  setDriveStatus('☁ 連線中…');
+
+  fetch(url)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!data.files || !data.files.length) {
+        throw new Error('資料夾內找不到報表檔案');
+      }
+      setDriveStatus('解析中… 0 / ' + data.files.length);
+
+      /* Convert base64 files → Blob → pass to existing loadFiles logic */
+      var fakeFiles = data.files.map(function(f) {
+        var bytes = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
+        var blob  = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        blob.name = f.name;
+        return blob;
+      });
+
+      /* Patch FileReader so loadFiles works with Blobs from Drive */
+      loadFiles(fakeFiles);
+      setDriveStatus('✓ 已從 Drive 載入 ' + data.files.length + ' 個報表', 'ok');
+      document.getElementById('zoneTitle').textContent = '✓ 已從 Drive 載入（' + data.files.length + ' 家店）';
+    })
+    .catch(function(err) {
+      setDriveStatus('載入失敗：' + err.message, 'err');
+    })
+    .finally(function() {
+      btn.disabled = false;
+    });
+}
 
 var zone      = document.getElementById('zone');
 var fileInput = document.getElementById('fileInput');
