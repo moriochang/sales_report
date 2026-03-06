@@ -401,16 +401,16 @@ tr:hover td { background: rgba(91,127,255,.04); }
 
   <div class="upload-zone" id="zone">
     <div class="icon">📊</div>
-    <div class="title" id="zoneTitle">拖曳或點擊上傳報表</div>
-    <div class="hint">銷售人員個績報表byAppleReference.xlsx</div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <div class="title" id="zoneTitle">拖曳或點擊上傳報表（可多選）</div>
+    <div class="hint">可同時匯入最多 5 家店 · 銷售人員個績報表byAppleReference.xlsx</div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" multiple>
   </div>
 
   <div class="err" id="err"></div>
 
   <div id="results">
     <div class="section-title">STORE</div>
-    <div id="store-label" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:20px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:inline-block">—</div>
+    <div id="store-chips" class="chips" style="margin-bottom:20px"></div>
     <div class="section-title">STAFF FILTER</div>
     <div class="chips" id="chips"></div>
 
@@ -438,7 +438,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
 
     <div class="panel">
       <div class="panel-head">
-        <span class="ptitle">明細列表</span>
+        <span class="ptitle">明細列表 <span id="detail-store-label" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-left:6px"></span></span>
         <div class="ftabs">
           <button class="ftab on"  data-f="all"  onclick="setFilter(this)">全部</button>
           <button class="ftab"     data-f="CPU"  onclick="setFilter(this)">CPU</button>
@@ -450,6 +450,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
         <table>
           <thead>
             <tr id="thead-sort">
+              <th data-col="store" class="col-store" style="color:#fff;display:none">門市 <span class="si">↕</span></th>
               <th data-col="id" style="color:#fff">員工編號 <span class="si">↕</span></th>
               <th data-col="date" style="color:#fff">日期 <span class="si">↕</span></th>
               <th data-col="c1" style="color:#fff">大分類 <span class="si">↕</span></th>
@@ -459,6 +460,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
               <th data-col="qty" style="color:#fff">總計銷售數量 <span class="si">↕</span></th>
             </tr>
             <tr id="thead-filter">
+              <th class="col-store" style="display:none"><input class="col-filter" data-col="store" placeholder="篩選…"></th>
               <th><input class="col-filter" data-col="id" placeholder="篩選…"></th>
               <th><input class="col-filter" data-col="date" placeholder="篩選…"></th>
               <th><input class="col-filter" data-col="c1" placeholder="篩選…"></th>
@@ -531,14 +533,18 @@ tr:hover td { background: rgba(91,127,255,.04); }
  *   [30] = 總計 銷售數量
  */
 
-var allRows   = [];
-var storeName  = '';
+/* ── Multi-store state ── */
+var storeDataMap = {};  /* { storeName: [rows] } */
+var storeOrder   = [];  /* ordered store names as loaded */
+var curStore     = null; /* null = 全部 */
+var allRows      = [];   /* rows for current store selection */
+var storeName    = '';
 var curStaff  = null;
 var curFilter = 'all';
 var CATS = ['CPU', 'iPad', 'Care'];
-var colFilters = {};   /* { colName: searchString } */
-var sortCol    = null; /* column key */
-var sortDir    = 1;    /* 1=asc, -1=desc */
+var colFilters = {};
+var sortCol    = null;
+var sortDir    = 1;
 
 var zone      = document.getElementById('zone');
 var fileInput = document.getElementById('fileInput');
@@ -548,10 +554,11 @@ zone.addEventListener('dragover',  function(e) { e.preventDefault(); zone.classL
 zone.addEventListener('dragleave', function()  { zone.classList.remove('over'); });
 zone.addEventListener('drop', function(e) {
   e.preventDefault(); zone.classList.remove('over');
-  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  var files = e.dataTransfer.files;
+  if (files.length) loadFiles(files);
 });
 fileInput.addEventListener('change', function(e) {
-  if (e.target.files[0]) loadFile(e.target.files[0]);
+  if (e.target.files.length) loadFiles(e.target.files);
 });
 
 function showErr(msg) {
@@ -561,23 +568,93 @@ function showErr(msg) {
 }
 function hideErr() { document.getElementById('err').style.display = 'none'; }
 
-function loadFile(file) {
+/* ── Load multiple files ── */
+function loadFiles(files) {
   hideErr();
-  document.getElementById('zoneTitle').textContent = '解析中…';
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var wb  = XLSX.read(new Uint8Array(e.target.result), { type: 'array', raw: true });
-      var ws  = wb.Sheets[wb.SheetNames[0]];
-      var raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      parseData(raw);
-      document.getElementById('zoneTitle').textContent = '✓ ' + file.name;
-    } catch(ex) {
-      showErr('解析失敗：' + ex.message);
-      document.getElementById('zoneTitle').textContent = '拖曳或點擊上傳報表';
-    }
-  };
-  reader.readAsArrayBuffer(file);
+  var arr = Array.prototype.slice.call(files);
+  if (arr.length === 0) return;
+
+  /* Reset if loading fresh batch */
+  storeDataMap = {};
+  storeOrder   = [];
+  curStore     = null;
+  curStaff     = null;
+  colFilters   = {};
+  sortCol      = null;
+  sortDir      = 1;
+
+  var total   = arr.length;
+  var loaded  = 0;
+  var errors  = [];
+
+  document.getElementById('zoneTitle').textContent = '解析中… 0 / ' + total;
+
+  arr.forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb  = XLSX.read(new Uint8Array(e.target.result), { type: 'array', raw: true });
+        var ws  = wb.Sheets[wb.SheetNames[0]];
+        var raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        var result = parseSingleFile(raw);
+        if (result) {
+          storeDataMap[result.name] = result.rows;
+          storeOrder.push(result.name);
+        } else {
+          errors.push(file.name);
+        }
+      } catch(ex) {
+        errors.push(file.name + '(' + ex.message + ')');
+      }
+      loaded++;
+      document.getElementById('zoneTitle').textContent = '解析中… ' + loaded + ' / ' + total;
+      if (loaded === total) finishLoad(errors, arr);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function finishLoad(errors, files) {
+  if (errors.length) showErr('以下檔案解析失敗：' + errors.join('、'));
+  if (storeOrder.length === 0) {
+    document.getElementById('zoneTitle').textContent = '拖曳或點擊上傳報表（可多選）';
+    return;
+  }
+  /* Sort stores by their numeric ID if detectable */
+  storeOrder.sort(function(a, b) {
+    var na = parseInt(a), nb = parseInt(b);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return a.localeCompare(b, 'zh-TW');
+  });
+  var names = storeOrder.join('、');
+  document.getElementById('zoneTitle').textContent = '✓ 已載入 ' + storeOrder.length + ' 家店：' + names;
+
+  /* Default to 全部 if multiple stores, else single */
+  curStore = storeOrder.length > 1 ? null : storeOrder[0];
+  rebuildAllRows();
+  buildStoreChips();
+  buildChips();
+  document.getElementById('results').style.display = 'block';
+  render();
+}
+
+/* Rebuild allRows from storeDataMap based on curStore */
+function rebuildAllRows() {
+  if (curStore === null) {
+    allRows = [];
+    storeOrder.forEach(function(s) {
+      storeDataMap[s].forEach(function(r) {
+        allRows.push(r);
+      });
+    });
+  } else {
+    allRows = storeDataMap[curStore] ? storeDataMap[curStore].slice() : [];
+  }
+  storeName = curStore || '全部門市';
+}
+
+function loadFile(file) {
+  loadFiles([file]);
 }
 
 function gStr(row, idx) {
@@ -595,11 +672,11 @@ function gNum(row, idx) {
   return isNaN(n) ? null : n;
 }
 
-function parseData(raw) {
-  allRows = [];
-  storeName = (raw[1] && raw[1][5]) ? String(raw[1][5]).trim() : '';
+/* ── Parse a single xlsx raw data → { name, rows } ── */
+function parseSingleFile(raw) {
+  var rows = [];
+  var sName = (raw[1] && raw[1][5]) ? String(raw[1][5]).trim() : '';
 
-  /* Find the section with 日期 column — look for header row containing '日期' at [6] and '大分類' at [8] */
   var sec2Start = -1;
   for (var r = 0; r < raw.length; r++) {
     var row = raw[r] || [];
@@ -609,30 +686,14 @@ function parseData(raw) {
     }
   }
 
-  if (sec2Start === -1) {
-    showErr('找不到日期欄位，請確認是正確的報表格式。');
-    document.getElementById('zoneTitle').textContent = '拖曳或點擊上傳報表';
-    return;
-  }
+  if (sec2Start === -1) return null;
 
-  /* Find the qty column for the target store in the sec2 header row.
-     The header row lists store names starting around col 21.
-     We look for the column whose value matches storeName, then qty is at that col + 8
-     (store header col → qty col offset is 8, same as single-store layout at col 21→30 = +9? 
-     Actually for single store: storeName at col 21 but qty was at 30 = +9.
-     For multi-store: 77 at col 21, qty at col 21+0 = qty col under that store.
-     Let's find the store col in sec2 header and then qty = storeCol + 9 for 銷售數量.
-  */
   var sec2HeaderRow = raw[sec2Start] || [];
-  var qtyCol = 30; /* default for single-store reports */
+  var qtyCol = 30;
   for (var ci = 0; ci < sec2HeaderRow.length; ci++) {
     var cellVal = sec2HeaderRow[ci] ? String(sec2HeaderRow[ci]).trim() : '';
-    if (cellVal === storeName) {
-      /* qty (銷售數量) is the first sub-column under the store, which is at storeCol + 0
-         but sub-header row (sec2Start+1) has '銷售數量' at storeCol offset.
-         From observation: store col = 21, qty col = 21+9? No — let's check sub-header */
+    if (cellVal === sName) {
       var subRow = raw[sec2Start + 1] || [];
-      /* scan right from ci to find first '銷售數量' */
       for (var si = ci; si < ci + 15; si++) {
         var sv = subRow[si] ? String(subRow[si]).trim() : '';
         if (sv === '銷售數量') { qtyCol = si; break; }
@@ -641,7 +702,6 @@ function parseData(raw) {
     }
   }
 
-  /* Parse from sec2Start + 2 (skip header + sub-header row) */
   var curId   = null;
   var curDate = null;
   var curC1   = null;
@@ -651,19 +711,12 @@ function parseData(raw) {
     var row = raw[i];
     if (!row) continue;
 
-    /* Staff ID */
     var maybeId = gStr(row, 0);
-    if (maybeId && /^A\d+$/.test(maybeId)) {
-      curId = maybeId;
-    }
+    if (maybeId && /^A\d+$/.test(maybeId)) curId = maybeId;
 
-    /* Date — 8-digit string like 20260201 */
     var maybeDate = gStr(row, 6);
-    if (maybeDate && /^\d{8}$/.test(maybeDate)) {
-      curDate = maybeDate;
-    }
+    if (maybeDate && /^\d{8}$/.test(maybeDate)) curDate = maybeDate;
 
-    /* Carry-forward category breadcrumbs */
     var c1 = gStr(row, 8);
     var c2 = gStr(row, 10);
     if (c1) curC1 = c1;
@@ -674,39 +727,59 @@ function parseData(raw) {
     var prodCode  = gStr(row, 15);
     var qty       = gNum(row, qtyCol);
 
-    /* 小分類(col13)有時為空（Excel同中分類下第二個品項不填），
-       改用 Product Code 判斷這筆是否有效，小分類空時用 Short Name 補 */
     if (!curId || !curC1 || !prodCode) continue;
     if (!c3) c3 = shortName || prodCode;
     if (CATS.indexOf(curC1) === -1)    continue;
     if (qty === null)                  continue;
 
-    allRows.push({
+    rows.push({
       id:        curId,
       date:      curDate || '—',
       c1:        curC1,
       c2:        curC2 || '',
       c3:        c3,
       shortName: shortName || '',
-      qty:       qty
+      qty:       qty,
+      store:     sName
     });
   }
 
-  if (allRows.length === 0) {
-    showErr('找不到有效數據（CPU / iPad / Care），請確認是正確的報表格式。');
-    document.getElementById('zoneTitle').textContent = '拖曳或點擊上傳報表';
-    return;
-  }
+  if (rows.length === 0) return null;
+  return { name: sName, rows: rows };
+}
 
+/* ── Store chips ── */
+function buildStoreChips() {
+  var el = document.getElementById('store-chips');
+  if (!el) return;
+  el.innerHTML = '';
+
+  var allChip = mkEl('div', 'chip' + (curStore === null ? ' on' : ''), '全部門市');
+  allChip.addEventListener('click', function() { pickStore(null); });
+  el.appendChild(allChip);
+
+  storeOrder.forEach(function(s) {
+    var c = mkEl('div', 'chip' + (curStore === s ? ' on' : ''), s);
+    c.dataset.store = s;
+    c.addEventListener('click', function() { pickStore(s); });
+    el.appendChild(c);
+  });
+}
+
+function pickStore(s) {
+  curStore = s;
+  curStaff = null;
+  colFilters = {};
+  /* Reset column filter inputs */
+  document.querySelectorAll('.col-filter').forEach(function(inp){ inp.value = ''; });
+  rebuildAllRows();
+  buildStoreChips();
   buildChips();
-  document.getElementById('results').style.display = 'block';
   render();
 }
 
 /* ── chips ── */
 function buildChips() {
-  var storeEl = document.getElementById('store-label');
-  if (storeEl) storeEl.textContent = storeName || '—';
   var ids = {};
   allRows.forEach(function(r) { ids[r.id] = true; });
 
@@ -725,8 +798,8 @@ function buildChips() {
   });
 
   /* init sort & col-filter controls (only first time) */
-  if (!document.getElementById('thead-sort').dataset.init) {
-    document.getElementById('thead-sort').dataset.init = '1';
+  if (!window._tableControlsInit) {
+    window._tableControlsInit = true;
     initTableControls();
   }
 }
@@ -818,16 +891,30 @@ function render() {
     });
   }
 
+  /* Update detail panel store label */
+  var dsl = document.getElementById('detail-store-label');
+  if (dsl) dsl.textContent = storeName ? '· ' + storeName : '';
+
   var tbody = document.getElementById('tbody');
   if (data.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="7"><div class="empty">沒有符合的資料</div></td></tr>';
+      '<tr><td colspan="8"><div class="empty">沒有符合的資料</div></td></tr>';
     return;
   }
 
+  /* Show/hide store column based on multi-store mode */
+  var multiStore = (curStore === null && storeOrder.length > 1);
+  document.querySelectorAll('.col-store').forEach(function(el){
+    el.style.display = multiStore ? '' : 'none';
+  });
+
   tbody.innerHTML = data.map(function(r) {
     var k = r.c1.toLowerCase();
+    var storeCell = multiStore
+      ? '<td class="mono" style="color:#a78bfa;font-size:12px">' + (r.store || '') + '</td>'
+      : '';
     return '<tr>'
+      + storeCell
       + '<td class="mono accent">'  + r.id        + '</td>'
       + '<td class="mono muted">'   + r.date       + '</td>'
       + '<td><span class="tag tag-' + k + '">' + r.c1 + '</span></td>'
@@ -850,7 +937,7 @@ function renderExport() {
 
   /* --- Table 1: CPU / iPad per staff --- */
   var staffIds = [];
-  allRows.forEach(function(r){ if (staffIds.indexOf(r.id) === -1) staffIds.push(r.id); });
+  base.forEach(function(r){ if (staffIds.indexOf(r.id) === -1) staffIds.push(r.id); });
   staffIds.sort();
 
   /* If staff filter active, only show that staff */
@@ -1177,18 +1264,35 @@ function renderExport() {
     return wd === 0 || wd === 6 || !!TW_HOLIDAYS[d];
   }
 
-  var dateSet = [];
+  /* Build full date range from ALL rows (across all stores), so zero-sales days still appear */
+  var allDates = [];
   allRows.forEach(function(r){
-    if (r.date && r.date !== '—' && dateSet.indexOf(r.date) === -1) dateSet.push(r.date);
+    if (r.date && r.date !== '—' && allDates.indexOf(r.date) === -1) allDates.push(r.date);
   });
-  dateSet.sort();
+  allDates.sort();
+
+  var dateSet = [];
+  if (allDates.length) {
+    var minD = allDates[0], maxD = allDates[allDates.length - 1];
+    var y0 = parseInt(minD.slice(0,4)), m0 = parseInt(minD.slice(4,6))-1, d0 = parseInt(minD.slice(6,8));
+    var y1 = parseInt(maxD.slice(0,4)), m1 = parseInt(maxD.slice(4,6))-1, d1 = parseInt(maxD.slice(6,8));
+    var cur = new Date(y0, m0, d0);
+    var end = new Date(y1, m1, d1);
+    while (cur <= end) {
+      var key = '' + cur.getFullYear()
+        + ('0'+(cur.getMonth()+1)).slice(-2)
+        + ('0'+cur.getDate()).slice(-2);
+      dateSet.push(key);
+      cur = new Date(cur.getTime() + 86400000);
+    }
+  }
 
   var totalCpu = 0, totalIpad = 0, totalCare = 0;
 
   var dailyBody = document.getElementById('exp-daily-body');
   if (dailyBody) {
     dailyBody.innerHTML = dateSet.map(function(d) {
-      var dayRows = allRows.filter(function(r){ return r.date === d; });
+      var dayRows = base.filter(function(r){ return r.date === d; });
       var cpu  = dayRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0);
       var ipad = dayRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0);
       var care = dayRows.filter(function(r){ return r.c1==='Care'; }).reduce(function(s,r){ return s+r.qty; }, 0);
@@ -1272,17 +1376,28 @@ function exportCSV(type) {
     });
   } else if (type === 'daily') {
     rows.push(['日期','CPU','iPad','Care']);
-    var dateSet2 = [];
+    var allDates2 = [];
     allRows.forEach(function(r){
-      if (r.date && r.date !== '—' && dateSet2.indexOf(r.date) === -1) dateSet2.push(r.date);
+      if (r.date && r.date !== '—' && allDates2.indexOf(r.date) === -1) allDates2.push(r.date);
     });
-    dateSet2.sort();
+    allDates2.sort();
+    var dateSet2 = [];
+    if (allDates2.length) {
+      var minD2 = allDates2[0], maxD2 = allDates2[allDates2.length-1];
+      var y0b=parseInt(minD2.slice(0,4)),m0b=parseInt(minD2.slice(4,6))-1,d0b=parseInt(minD2.slice(6,8));
+      var y1b=parseInt(maxD2.slice(0,4)),m1b=parseInt(maxD2.slice(4,6))-1,d1b=parseInt(maxD2.slice(6,8));
+      var curB=new Date(y0b,m0b,d0b), endB=new Date(y1b,m1b,d1b);
+      while (curB <= endB) {
+        dateSet2.push('' + curB.getFullYear() + ('0'+(curB.getMonth()+1)).slice(-2) + ('0'+curB.getDate()).slice(-2));
+        curB = new Date(curB.getTime() + 86400000);
+      }
+    }
     var tcpu2=0,tipad2=0,tcare2=0;
     var WD2 = ['日','一','二','三','四','五','六'];
     dateSet2.forEach(function(d){
       var y=parseInt(d.slice(0,4)),m=parseInt(d.slice(4,6))-1,day=parseInt(d.slice(6,8));
       var lbl = d + ' (' + WD2[new Date(y,m,day).getDay()] + ')';
-      var dr = allRows.filter(function(r){ return r.date === d; });
+      var dr = base.filter(function(r){ return r.date === d; });
       var cpu  = dr.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0);
       var ipad = dr.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0);
       var care = dr.filter(function(r){ return r.c1==='Care'; }).reduce(function(s,r){ return s+r.qty; }, 0);
