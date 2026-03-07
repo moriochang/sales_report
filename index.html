@@ -862,6 +862,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
         🔍 查詢
       </button>
       <div class="hist-status" id="histStatus"></div>
+      <div id="histModeDebug" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)"></div>
     </div>
   </div>
 
@@ -2029,6 +2030,12 @@ function switchHistMode(mode) {
   if (tabAll) tabAll.classList.toggle('on', mode === 'all');
   document.getElementById('monthPicker').style.display = mode === 'month' ? 'block' : 'none';
   document.getElementById('fyPicker').style.display    = mode === 'fy'    ? 'block' : 'none';
+  /* Restore month chip visual state when switching back to month mode */
+  if (mode === 'month' && histSelMonth) {
+    document.querySelectorAll('.month-chip').forEach(function(c) {
+      c.classList.toggle('on', c.dataset.ym === histSelMonth);
+    });
+  }
 }
 
 /* ── Load history ── */
@@ -2082,6 +2089,9 @@ function histAddFiles(files) {
 }
 
 function loadHistory() {
+  var dbg = document.getElementById('histModeDebug');
+  var dr = (histMode === 'all') ? null : getHistDateRange();
+  if (dbg) dbg.textContent = 'mode='+histMode+' | month='+histSelMonth+' | range='+(dr ? dr.from+'~'+dr.to : 'null');
   if (histSrc === 'loaded') {
     loadHistoryFromLoaded();
   } else {
@@ -2130,7 +2140,8 @@ function loadHistoryFromLoaded() {
   hBuildStoreChips();
   hBuildChips();
   document.getElementById('histResults').style.display = 'block';
-  document.getElementById('histRangeLabel').textContent = dateRange ? dateRange.label : '全部已載入資料';
+  var modeLabel = histMode === 'all' ? '全部已載入資料' : (dateRange ? dateRange.label : '（未選擇期間）');
+  document.getElementById('histRangeLabel').textContent = modeLabel;
   setHistStatus('✓ ' + histAllRows.length + ' 筆資料', 'ok');
   hRender();
 }
