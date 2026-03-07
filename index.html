@@ -459,7 +459,181 @@ tr:hover td { background: rgba(91,127,255,.04); }
 }
 .chart-val.cpu-val  { color: var(--cpu);  }
 .chart-val.ipad-val { color: var(--ipad); }
-</style>
+
+/* ── Mode switcher ── */
+.mode-switcher {
+  display: flex;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 5px;
+  margin-bottom: 28px;
+  width: fit-content;
+}
+.mode-btn {
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  font-family: 'Noto Sans TC', sans-serif;
+  white-space: nowrap;
+}
+.mode-btn:hover { color: var(--text); }
+.mode-btn.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── History panel ── */
+#historyPanel { display: none; margin-top: 0; }
+
+.hist-selector {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.hist-mode-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.hist-tab {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.hist-tab:hover { border-color: var(--accent); color: var(--text); }
+.hist-tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* month picker */
+.month-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.month-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+}
+.month-chip:hover { border-color: var(--accent); color: var(--text); }
+.month-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.month-chip.no-data { opacity: .35; cursor: not-allowed; }
+
+/* fiscal quarter picker */
+.fy-picker { display: none; }
+.fy-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fy-quarter-col { display: flex; flex-direction: column; gap: 8px; }
+.fy-quarter-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.fy-q-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fy-q-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.fy-q-chip:hover  { border-color: var(--accent); color: var(--text); }
+.fy-q-chip.on     { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+.fy-week-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fy-w-chips  { display: flex; flex-wrap: wrap; gap: 6px; }
+.fy-w-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.fy-w-chip:hover { border-color: var(--accent); color: var(--text); }
+.fy-w-chip.on    { background: rgba(91,127,255,.25); border-color: var(--accent); color: #fff; }
+.fy-w-chip.no-data { opacity: .3; cursor: not-allowed; }
+
+.hist-load-btn {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background .18s, opacity .18s;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.hist-load-btn:hover    { background: #4060dd; }
+.hist-load-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.hist-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  min-height: 16px;
+}
+.hist-status.ok  { color: #34d399; }
+.hist-status.err { color: #f87171; }
+
+/* range label */
+.range-label {
+  display: inline-block;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: .05em;
+}
+
 </head>
 <body>
 <div class="container">
@@ -471,6 +645,14 @@ tr:hover td { background: rgba(91,127,255,.04); }
     </div>
   </div>
 
+  <!-- Mode switcher -->
+  <div class="mode-switcher">
+    <button class="mode-btn on" id="modeCurrentBtn" onclick="switchMode('current')">📊 當月報表</button>
+    <button class="mode-btn"   id="modeHistBtn"    onclick="switchMode('history')">🗂 歷史查詢</button>
+  </div>
+
+  <!-- ══ 當月報表模式 ══ -->
+  <div id="currentPanel">
   <div class="upload-zone" id="zone">
     <div class="icon">📊</div>
     <div class="title" id="zoneTitle">拖曳或點擊上傳報表（可多選）</div>
@@ -609,7 +791,166 @@ tr:hover td { background: rgba(91,127,255,.04); }
       </div>
     </div>
   </div>
-</div>
+</div><!-- /#currentPanel -->
+
+<!-- ══ 歷史查詢模式 ══ -->
+<div id="historyPanel">
+
+  <!-- Drive URL 設定（共用，只顯示一行） -->
+  <div class="hist-selector">
+    <div class="drive-section-title" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:12px">ARCHIVE FOLDER · Apps Script Web App URL</div>
+    <div class="drive-row">
+      <input class="drive-url-input" id="histWebAppUrl" type="text"
+        placeholder="貼上 Apps Script Web App URL（與上方共用）…"
+        oninput="syncDriveUrl(this.value)">
+    </div>
+
+    <!-- 月份 / 季度 tab -->
+    <div class="hist-mode-tabs" style="margin-top:16px">
+      <button class="hist-tab on" id="histTabMonth" onclick="switchHistMode('month')">依月份</button>
+      <button class="hist-tab"   id="histTabFY"    onclick="switchHistMode('fy')">依季度／週數</button>
+    </div>
+
+    <!-- 月份選擇 -->
+    <div id="monthPicker">
+      <div class="month-grid" id="monthGrid"></div>
+    </div>
+
+    <!-- 季度 + 週數選擇 -->
+    <div class="fy-picker" id="fyPicker">
+      <div class="fy-row">
+        <div class="fy-quarter-col">
+          <div class="fy-quarter-label">FISCAL QUARTER</div>
+          <div class="fy-q-chips" id="fyQChips"></div>
+        </div>
+        <div class="fy-week-col">
+          <div class="fy-quarter-label">WEEK（可多選）</div>
+          <div class="fy-w-chips" id="fyWChips"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px">
+      <button class="hist-load-btn" id="histLoadBtn" onclick="loadHistory()">
+        ☁ 載入選定期間
+      </button>
+      <div class="hist-status" id="histStatus"></div>
+    </div>
+  </div>
+
+  <!-- 歷史結果區（複用相同的 render 邏輯） -->
+  <div id="histResults" style="display:none">
+    <div class="range-label" id="histRangeLabel"></div>
+    <div class="section-title">STORE</div>
+    <div id="hist-store-chips" class="chips" style="margin-bottom:20px"></div>
+    <div class="section-title">STAFF FILTER</div>
+    <div class="chips" id="hist-chips"></div>
+
+    <div class="cards">
+      <div class="card c-cpu"> <div class="lbl">CPU</div>  <div class="num" id="hn-cpu">—</div>  <div class="sub">件數</div></div>
+      <div class="card c-ipad"><div class="lbl">iPad</div> <div class="num" id="hn-ipad">—</div> <div class="sub">件數</div></div>
+      <div class="card c-care"><div class="lbl">CARE</div> <div class="num" id="hn-care">—</div> <div class="sub">件數</div></div>
+    </div>
+
+    <div class="chart-section" style="margin-bottom:20px">
+      <div class="chart-panel">
+        <div class="chart-panel-head"><span class="ctitle">CPU · 中分類銷售分析</span></div>
+        <div class="chart-body" id="hchart-cpu"></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-panel-head"><span class="ctitle">iPad · 中分類銷售分析</span></div>
+        <div class="chart-body" id="hchart-ipad"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="ptitle">明細列表 <span id="hist-detail-label" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-left:6px"></span></span>
+        <div class="ftabs">
+          <button class="ftab on" data-f="all"  onclick="hSetFilter(this)">全部</button>
+          <button class="ftab"    data-f="CPU"  onclick="hSetFilter(this)">CPU</button>
+          <button class="ftab"    data-f="iPad" onclick="hSetFilter(this)">iPad</button>
+          <button class="ftab"    data-f="Care" onclick="hSetFilter(this)">Care</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr id="hthead-sort">
+              <th data-col="store" class="hcol-store" style="color:#fff;display:none">門市 <span class="si">↕</span></th>
+              <th data-col="id"        style="color:#fff">員工編號 <span class="si">↕</span></th>
+              <th data-col="date"      style="color:#fff">日期 <span class="si">↕</span></th>
+              <th data-col="c1"        style="color:#fff">大分類 <span class="si">↕</span></th>
+              <th data-col="c2"        style="color:#fff">中分類 <span class="si">↕</span></th>
+              <th data-col="c3"        style="color:#fff">小分類 <span class="si">↕</span></th>
+              <th data-col="shortName" style="color:#fff">Short Name <span class="si">↕</span></th>
+              <th data-col="qty"       style="color:#fff">總計銷售數量 <span class="si">↕</span></th>
+            </tr>
+            <tr id="hthead-filter">
+              <th class="hcol-store" style="display:none"><input class="hcol-filter" data-col="store" placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="id"        placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="date"      placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="c1"        placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="c2"        placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="c3"        placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="shortName" placeholder="篩選…"></th>
+              <th><input class="hcol-filter" data-col="qty"       placeholder="篩選…"></th>
+            </tr>
+          </thead>
+          <tbody id="htbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="export-section" style="margin-top:32px">
+      <div class="export-panel">
+        <div class="export-panel-head">
+          <span class="etitle">CPU / iPad 彙總</span>
+          <button class="export-btn" onclick="hExportCSV('cpu-ipad')">⬇ CSV</button>
+        </div>
+        <div class="export-tbl-wrap">
+          <table><thead><tr>
+            <th style="color:#fff;font-size:12px">員工編號</th>
+            <th style="color:#fff;font-size:12px">CPU</th>
+            <th style="color:#fff;font-size:12px">iPad</th>
+          </tr></thead><tbody id="hexp-ci-body"></tbody></table>
+        </div>
+      </div>
+      <div class="export-panel">
+        <div class="export-panel-head">
+          <span class="etitle">Care 彙總</span>
+          <button class="export-btn" onclick="hExportCSV('care')">⬇ CSV</button>
+        </div>
+        <div class="export-tbl-wrap">
+          <table id="hexp-care"><thead><tr id="hexp-care-head"></tr></thead><tbody id="hexp-care-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="export-panel" style="margin-top:20px">
+      <div class="export-panel-head">
+        <span class="etitle">每日銷售彙總</span>
+        <button class="export-btn" onclick="hExportCSV('daily')">⬇ CSV</button>
+      </div>
+      <div class="export-tbl-wrap">
+        <table style="table-layout:fixed;width:100%">
+          <thead><tr>
+            <th style="color:#fff;font-size:12px;width:160px">日期</th>
+            <th style="color:#fff;font-size:12px;width:70px">季度</th>
+            <th style="color:#fff;font-size:12px;width:45px">週數</th>
+            <th style="color:#fff;font-size:12px;text-align:right;width:60px">CPU</th>
+            <th style="color:#fff;font-size:12px;text-align:right;width:60px">iPad</th>
+            <th style="color:#fff;font-size:12px;text-align:right;width:60px">Care</th>
+          </tr></thead>
+          <tbody id="hexp-daily-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /#histResults -->
+
+</div><!-- /#historyPanel -->
+
+</div><!-- /.container -->
 
 <script>
 /*
@@ -636,6 +977,44 @@ var CATS = ['CPU', 'iPad', 'Care'];
 var colFilters = {};
 var sortCol    = null;
 var sortDir    = 1;
+
+/* ── Global QW_MAP (date YYYYMMDD → 'FYxxQx Wx') ──
+   Defined here so both renderExport and historyPanel can use it.
+   The full QW_DATA array inside renderExport still builds its own local copy;
+   this global is built from FY_WEEK_DATES defined later in the history section.
+   We use a lazy initializer so it's available after all code is parsed. */
+var QW_MAP = null; /* will be populated by buildGlobalQWMap() on first use */
+
+function buildGlobalQWMap() {
+  if (QW_MAP) return;
+  QW_MAP = {};
+  var allPairs = [
+    ['20231001','FY24Q1 W1'],['20231008','FY24Q1 W2'],['20231015','FY24Q1 W3'],['20231022','FY24Q1 W4'],['20231029','FY24Q1 W5'],['20231105','FY24Q1 W6'],['20231112','FY24Q1 W7'],['20231119','FY24Q1 W8'],['20231126','FY24Q1 W9'],['20231203','FY24Q1 W10'],['20231210','FY24Q1 W11'],['20231217','FY24Q1 W12'],['20231224','FY24Q1 W13'],
+    ['20231231','FY24Q2 W1'],['20240107','FY24Q2 W2'],['20240114','FY24Q2 W3'],['20240121','FY24Q2 W4'],['20240128','FY24Q2 W5'],['20240204','FY24Q2 W6'],['20240211','FY24Q2 W7'],['20240218','FY24Q2 W8'],['20240225','FY24Q2 W9'],['20240303','FY24Q2 W10'],['20240310','FY24Q2 W11'],['20240317','FY24Q2 W12'],['20240324','FY24Q2 W13'],
+    ['20240407','FY24Q3 W1'],['20240414','FY24Q3 W2'],['20240421','FY24Q3 W3'],['20240428','FY24Q3 W4'],['20240505','FY24Q3 W5'],['20240512','FY24Q3 W6'],['20240519','FY24Q3 W7'],['20240526','FY24Q3 W8'],['20240602','FY24Q3 W9'],['20240609','FY24Q3 W10'],['20240616','FY24Q3 W11'],['20240623','FY24Q3 W12'],['20240630','FY24Q3 W13'],
+    ['20240707','FY24Q4 W1'],['20240714','FY24Q4 W2'],['20240721','FY24Q4 W3'],['20240728','FY24Q4 W4'],['20240804','FY24Q4 W5'],['20240811','FY24Q4 W6'],['20240818','FY24Q4 W7'],['20240825','FY24Q4 W8'],['20240901','FY24Q4 W9'],['20240908','FY24Q4 W10'],['20240915','FY24Q4 W11'],['20240922','FY24Q4 W12'],['20240929','FY24Q4 W13'],
+    ['20240929','FY25Q1 W1'],['20241006','FY25Q1 W2'],['20241013','FY25Q1 W3'],['20241020','FY25Q1 W4'],['20241027','FY25Q1 W5'],['20241103','FY25Q1 W6'],['20241110','FY25Q1 W7'],['20241117','FY25Q1 W8'],['20241124','FY25Q1 W9'],['20241201','FY25Q1 W10'],['20241208','FY25Q1 W11'],['20241215','FY25Q1 W12'],['20241222','FY25Q1 W13'],
+    ['20241229','FY25Q2 W1'],['20250105','FY25Q2 W2'],['20250112','FY25Q2 W3'],['20250119','FY25Q2 W4'],['20250126','FY25Q2 W5'],['20250202','FY25Q2 W6'],['20250209','FY25Q2 W7'],['20250216','FY25Q2 W8'],['20250223','FY25Q2 W9'],['20250302','FY25Q2 W10'],['20250309','FY25Q2 W11'],['20250316','FY25Q2 W12'],['20250323','FY25Q2 W13'],
+    ['20250330','FY25Q3 W1'],['20250406','FY25Q3 W2'],['20250413','FY25Q3 W3'],['20250420','FY25Q3 W4'],['20250427','FY25Q3 W5'],['20250504','FY25Q3 W6'],['20250511','FY25Q3 W7'],['20250518','FY25Q3 W8'],['20250525','FY25Q3 W9'],['20250601','FY25Q3 W10'],['20250608','FY25Q3 W11'],['20250615','FY25Q3 W12'],['20250622','FY25Q3 W13'],
+    ['20250629','FY25Q4 W1'],['20250706','FY25Q4 W2'],['20250713','FY25Q4 W3'],['20250720','FY25Q4 W4'],['20250727','FY25Q4 W5'],['20250803','FY25Q4 W6'],['20250810','FY25Q4 W7'],['20250817','FY25Q4 W8'],['20250824','FY25Q4 W9'],['20250831','FY25Q4 W10'],['20250907','FY25Q4 W11'],['20250914','FY25Q4 W12'],['20250921','FY25Q4 W13'],
+    ['20251005','FY26Q1 W1'],['20251012','FY26Q1 W2'],['20251019','FY26Q1 W3'],['20251026','FY26Q1 W4'],['20251102','FY26Q1 W5'],['20251109','FY26Q1 W6'],['20251116','FY26Q1 W7'],['20251123','FY26Q1 W8'],['20251130','FY26Q1 W9'],['20251207','FY26Q1 W10'],['20251214','FY26Q1 W11'],['20251221','FY26Q1 W12'],['20251228','FY26Q1 W13'],
+    ['20251228','FY26Q2 W1'],['20260104','FY26Q2 W2'],['20260111','FY26Q2 W3'],['20260118','FY26Q2 W4'],['20260125','FY26Q2 W5'],['20260201','FY26Q2 W6'],['20260208','FY26Q2 W7'],['20260215','FY26Q2 W8'],['20260222','FY26Q2 W9'],['20260301','FY26Q2 W10'],['20260308','FY26Q2 W11'],['20260315','FY26Q2 W12'],['20260322','FY26Q2 W13'],
+    ['20260329','FY26Q3 W1'],['20260405','FY26Q3 W2'],['20260412','FY26Q3 W3'],['20260419','FY26Q3 W4'],['20260426','FY26Q3 W5'],['20260503','FY26Q3 W6'],['20260510','FY26Q3 W7'],['20260517','FY26Q3 W8'],['20260524','FY26Q3 W9'],['20260531','FY26Q3 W10'],['20260607','FY26Q3 W11'],['20260614','FY26Q3 W12'],['20260621','FY26Q3 W13'],
+    ['20260628','FY26Q4 W1'],['20260705','FY26Q4 W2'],['20260712','FY26Q4 W3'],['20260719','FY26Q4 W4'],['20260726','FY26Q4 W5'],['20260802','FY26Q4 W6'],['20260809','FY26Q4 W7'],['20260816','FY26Q4 W8'],['20260823','FY26Q4 W9'],['20260830','FY26Q4 W10'],['20260906','FY26Q4 W11'],['20260913','FY26Q4 W12'],['20260920','FY26Q4 W13'],
+    ['20260927','FY27Q1 W1'],['20261004','FY27Q1 W2'],['20261011','FY27Q1 W3'],['20261018','FY27Q1 W4'],['20261025','FY27Q1 W5'],['20261101','FY27Q1 W6'],['20261108','FY27Q1 W7'],['20261115','FY27Q1 W8'],['20261122','FY27Q1 W9'],['20261129','FY27Q1 W10'],['20261206','FY27Q1 W11'],['20261213','FY27Q1 W12'],['20261220','FY27Q1 W13'],
+    ['20261227','FY27Q2 W1'],['20270103','FY27Q2 W2'],['20270110','FY27Q2 W3'],['20270117','FY27Q2 W4'],['20270124','FY27Q2 W5'],['20270131','FY27Q2 W6'],['20270207','FY27Q2 W7'],['20270214','FY27Q2 W8'],['20270221','FY27Q2 W9'],['20270228','FY27Q2 W10'],['20270307','FY27Q2 W11'],['20270314','FY27Q2 W12'],['20270321','FY27Q2 W13']
+  ];
+  allPairs.forEach(function(p) {
+    var y=parseInt(p[0].slice(0,4)), m=parseInt(p[0].slice(4,6))-1, d=parseInt(p[0].slice(6,8));
+    var start = new Date(y, m, d);
+    for (var i = 0; i < 7; i++) {
+      var dd = new Date(start.getTime() + i*86400000);
+      var key = '' + dd.getFullYear() + ('0'+(dd.getMonth()+1)).slice(-2) + ('0'+dd.getDate()).slice(-2);
+      if (!QW_MAP[key]) QW_MAP[key] = p[1]; /* first writer wins for overlapping weeks */
+    }
+  });
+}
+buildGlobalQWMap();
 
 /* ── Google Drive loader ── */
 (function() {
@@ -1602,6 +1981,605 @@ function mkEl(tag, cls, html) {
   el.className = cls;
   el.innerHTML = html;
   return el;
+}
+
+/* ══════════════════════════════════════════
+   MODE SWITCHER
+══════════════════════════════════════════ */
+function switchMode(mode) {
+  var isCurrent = mode === 'current';
+  document.getElementById('currentPanel').style.display  = isCurrent ? '' : 'none';
+  document.getElementById('historyPanel').style.display  = isCurrent ? 'none' : '';
+  document.getElementById('modeCurrentBtn').classList.toggle('on',  isCurrent);
+  document.getElementById('modeHistBtn').classList.toggle('on',    !isCurrent);
+  if (!isCurrent && !histInitDone) initHistoryPanel();
+}
+
+/* ══════════════════════════════════════════
+   HISTORY MODE
+══════════════════════════════════════════ */
+
+/* ── State ── */
+var histAllRows    = [];  /* all parsed rows across loaded archive files */
+var histStoreMap   = {};  /* { storeName: [rows] } */
+var histStoreOrder = [];
+var histCurStore   = null;
+var histCurStaff   = null;
+var histCurFilter  = 'all';
+var histColFilters = {};
+var histSortCol    = null;
+var histSortDir    = 1;
+var histInitDone   = false;
+var histMode       = 'month'; /* 'month' | 'fy' */
+var histSelMonth   = null;    /* '202601' */
+var histSelFYQ     = null;    /* 'FY26Q2' */
+var histSelWeeks   = {};      /* { 'W6': true, 'W7': true } */
+
+/* QW lookup – reuse existing QW_MAP built in renderExport, or rebuild here */
+function getQWMap() {
+  /* We rely on the global QW_MAP built inside renderExport's closure.
+     Instead, rebuild a small standalone one. */
+  if (window._qwMap) return window._qwMap;
+  window._qwMap = QW_MAP; /* defined in renderExport scope – not accessible.
+                              We'll rebuild below after QW_DATA is accessible. */
+  return window._qwMap;
+}
+
+/* ── Init ── */
+function initHistoryPanel() {
+  histInitDone = true;
+
+  /* Sync URL from current panel */
+  var saved = (localStorage.getItem('driveWebAppUrl') || '').trim();
+  var el = document.getElementById('histWebAppUrl');
+  if (el && saved) el.value = saved;
+
+  buildMonthGrid();
+  buildFYPicker();
+}
+
+function syncDriveUrl(val) {
+  val = val.trim();
+  try { localStorage.setItem('driveWebAppUrl', val); } catch(e) {}
+  /* Also sync to current panel input */
+  var el = document.getElementById('driveWebAppUrl');
+  if (el) el.value = val;
+}
+
+/* ── Month grid ── */
+/* Generate months from FY25Q1 (Oct 2024) to current month */
+function buildMonthGrid() {
+  var now = new Date();
+  var months = [];
+  /* Start from 2024-10 (reasonable history start) */
+  var y = 2024, m = 10;
+  while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth() + 1)) {
+    months.push('' + y + ('0' + m).slice(-2));
+    m++;
+    if (m > 12) { m = 1; y++; }
+  }
+
+  var grid = document.getElementById('monthGrid');
+  if (!grid) return;
+  grid.innerHTML = months.map(function(ym) {
+    var yr = ym.slice(0,4), mo = parseInt(ym.slice(4,6));
+    return '<div class="month-chip" data-ym="' + ym + '" onclick="pickMonth(this)">'
+      + yr + '/' + ('0'+mo).slice(-2) + '</div>';
+  }).join('');
+}
+
+function pickMonth(el) {
+  histSelMonth = el.dataset.ym;
+  document.querySelectorAll('.month-chip').forEach(function(c){
+    c.classList.toggle('on', c.dataset.ym === histSelMonth);
+  });
+}
+
+/* ── FY Picker ── */
+var FY_QUARTERS = (function() {
+  /* Extract unique quarters from QW_DATA */
+  var seen = {}, list = [];
+  /* QW_DATA accessible only inside renderExport closure—rebuild subset */
+  var rawQW = [
+    ['20251228','FY26Q1'],['20251221','FY26Q1'],['20251214','FY26Q1'],['20251207','FY26Q1'],
+    ['20251130','FY26Q1'],['20251123','FY26Q1'],['20251116','FY26Q1'],['20251109','FY26Q1'],
+    ['20251102','FY26Q1'],['20251026','FY26Q1'],['20251019','FY26Q1'],['20251012','FY26Q1'],
+    ['20251005','FY26Q1'],
+    ['20260104','FY26Q2'],['20260111','FY26Q2'],['20260118','FY26Q2'],['20260125','FY26Q2'],
+    ['20260201','FY26Q2'],['20260208','FY26Q2'],['20260215','FY26Q2'],['20260222','FY26Q2'],
+    ['20260301','FY26Q2'],['20260308','FY26Q2'],['20260315','FY26Q2'],['20260322','FY26Q2'],
+    ['20251228','FY26Q2'],
+    ['20260329','FY26Q3'],['20260405','FY26Q3'],['20260412','FY26Q3'],['20260419','FY26Q3'],
+    ['20260426','FY26Q3'],['20260503','FY26Q3'],['20260510','FY26Q3'],['20260517','FY26Q3'],
+    ['20260524','FY26Q3'],['20260531','FY26Q3'],['20260607','FY26Q3'],['20260614','FY26Q3'],
+    ['20260621','FY26Q3'],
+    ['20260628','FY26Q4'],['20260705','FY26Q4'],['20260712','FY26Q4'],['20260719','FY26Q4'],
+    ['20260726','FY26Q4'],['20260802','FY26Q4'],['20260809','FY26Q4'],['20260816','FY26Q4'],
+    ['20260823','FY26Q4'],['20260830','FY26Q4'],['20260906','FY26Q4'],['20260913','FY26Q4'],
+    ['20260920','FY26Q4'],
+    ['20260927','FY27Q1'],['20261004','FY27Q1'],['20261011','FY27Q1'],['20261018','FY27Q1'],
+    ['20261025','FY27Q1'],['20261101','FY27Q1'],['20261108','FY27Q1'],['20261115','FY27Q1'],
+    ['20261122','FY27Q1'],['20261129','FY27Q1'],['20261206','FY27Q1'],['20261213','FY27Q1'],
+    ['20261220','FY27Q1']
+  ];
+  rawQW.forEach(function(r){ if (!seen[r[1]]) { seen[r[1]] = true; list.push(r[1]); } });
+  return list.filter(function(v, i, a){ return a.indexOf(v) === i; }).sort();
+})();
+
+/* Map: FYQ → { W1: [startDate, endDate], W2: …, … } */
+var FY_WEEK_DATES = (function() {
+  var map = {};
+  /* Full QW_DATA pairs [startDateStr, 'FYxxQx Wx'] — replicated from renderExport */
+  var pairs = [
+    ['20251005','FY26Q1 W1'],['20251012','FY26Q1 W2'],['20251019','FY26Q1 W3'],
+    ['20251026','FY26Q1 W4'],['20251102','FY26Q1 W5'],['20251109','FY26Q1 W6'],
+    ['20251116','FY26Q1 W7'],['20251123','FY26Q1 W8'],['20251130','FY26Q1 W9'],
+    ['20251207','FY26Q1 W10'],['20251214','FY26Q1 W11'],['20251221','FY26Q1 W12'],
+    ['20251228','FY26Q1 W13'],
+    ['20251228','FY26Q2 W1'],['20260104','FY26Q2 W2'],['20260111','FY26Q2 W3'],
+    ['20260118','FY26Q2 W4'],['20260125','FY26Q2 W5'],['20260201','FY26Q2 W6'],
+    ['20260208','FY26Q2 W7'],['20260215','FY26Q2 W8'],['20260222','FY26Q2 W9'],
+    ['20260301','FY26Q2 W10'],['20260308','FY26Q2 W11'],['20260315','FY26Q2 W12'],
+    ['20260322','FY26Q2 W13'],
+    ['20260329','FY26Q3 W1'],['20260405','FY26Q3 W2'],['20260412','FY26Q3 W3'],
+    ['20260419','FY26Q3 W4'],['20260426','FY26Q3 W5'],['20260503','FY26Q3 W6'],
+    ['20260510','FY26Q3 W7'],['20260517','FY26Q3 W8'],['20260524','FY26Q3 W9'],
+    ['20260531','FY26Q3 W10'],['20260607','FY26Q3 W11'],['20260614','FY26Q3 W12'],
+    ['20260621','FY26Q3 W13'],
+    ['20260628','FY26Q4 W1'],['20260705','FY26Q4 W2'],['20260712','FY26Q4 W3'],
+    ['20260719','FY26Q4 W4'],['20260726','FY26Q4 W5'],['20260802','FY26Q4 W6'],
+    ['20260809','FY26Q4 W7'],['20260816','FY26Q4 W8'],['20260823','FY26Q4 W9'],
+    ['20260830','FY26Q4 W10'],['20260906','FY26Q4 W11'],['20260913','FY26Q4 W12'],
+    ['20260920','FY26Q4 W13'],
+    ['20260927','FY27Q1 W1'],['20261004','FY27Q1 W2'],['20261011','FY27Q1 W3'],
+    ['20261018','FY27Q1 W4'],['20261025','FY27Q1 W5'],['20261101','FY27Q1 W6'],
+    ['20261108','FY27Q1 W7'],['20261115','FY27Q1 W8'],['20261122','FY27Q1 W9'],
+    ['20261129','FY27Q1 W10'],['20261206','FY27Q1 W11'],['20261213','FY27Q1 W12'],
+    ['20261220','FY27Q1 W13']
+  ];
+  pairs.forEach(function(p) {
+    var parts = p[1].split(' ');
+    var q = parts[0], w = parts[1];
+    if (!map[q]) map[q] = {};
+    var y=parseInt(p[0].slice(0,4)), m=parseInt(p[0].slice(4,6))-1, d=parseInt(p[0].slice(6,8));
+    var start = new Date(y, m, d);
+    var end   = new Date(start.getTime() + 6*86400000);
+    map[q][w] = { start: p[0], end: fmtDate(end) };
+  });
+  return map;
+})();
+
+function fmtDate(d) {
+  return '' + d.getFullYear() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
+}
+
+function buildFYPicker() {
+  var qEl = document.getElementById('fyQChips');
+  if (!qEl) return;
+  /* Only show FY26 onwards */
+  var qs = Object.keys(FY_WEEK_DATES).sort();
+  qEl.innerHTML = qs.map(function(q) {
+    return '<div class="fy-q-chip" data-q="' + q + '" onclick="pickFYQ(this)">' + q + '</div>';
+  }).join('');
+  /* Default select first quarter */
+  if (qs.length) pickFYQ(qEl.querySelector('[data-q="' + qs[0] + '"]'));
+}
+
+function pickFYQ(el) {
+  if (!el) return;
+  histSelFYQ   = el.dataset.q;
+  histSelWeeks = {};
+  document.querySelectorAll('.fy-q-chip').forEach(function(c){
+    c.classList.toggle('on', c.dataset.q === histSelFYQ);
+  });
+  buildWeekChips();
+}
+
+function buildWeekChips() {
+  var wEl = document.getElementById('fyWChips');
+  if (!wEl || !histSelFYQ) return;
+  var weeks = FY_WEEK_DATES[histSelFYQ] || {};
+  var wNames = Object.keys(weeks).sort(function(a,b){
+    return parseInt(a.slice(1)) - parseInt(b.slice(1));
+  });
+  wEl.innerHTML = wNames.map(function(w) {
+    return '<div class="fy-w-chip" data-w="' + w + '" onclick="toggleWeek(this)">' + w + '</div>';
+  }).join('');
+}
+
+function toggleWeek(el) {
+  var w = el.dataset.w;
+  if (histSelWeeks[w]) {
+    delete histSelWeeks[w];
+    el.classList.remove('on');
+  } else {
+    histSelWeeks[w] = true;
+    el.classList.add('on');
+  }
+}
+
+function switchHistMode(mode) {
+  histMode = mode;
+  document.getElementById('histTabMonth').classList.toggle('on', mode === 'month');
+  document.getElementById('histTabFY').classList.toggle('on',    mode === 'fy');
+  document.getElementById('monthPicker').style.display = mode === 'month' ? '' : 'none';
+  document.getElementById('fyPicker').style.display    = mode === 'fy'    ? '' : 'none';
+}
+
+/* ── Load history from Drive ── */
+function loadHistory() {
+  var url = (localStorage.getItem('driveWebAppUrl') || '').trim();
+  if (!url) {
+    setHistStatus('請先在「當月報表」頁面設定 Web App URL', 'err'); return;
+  }
+
+  /* Determine date range to request */
+  var dateRange = getHistDateRange();
+  if (!dateRange) {
+    setHistStatus('請先選擇月份或季度／週數', 'err'); return;
+  }
+
+  var btn = document.getElementById('histLoadBtn');
+  btn.disabled = true;
+  setHistStatus('☁ 連線中…');
+
+  /* Pass date filter as query params so Apps Script can filter */
+  var fetchUrl = url + '?mode=archive&from=' + dateRange.from + '&to=' + dateRange.to;
+
+  fetch(fetchUrl)
+    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(function(data) {
+      if (data.error) throw new Error(data.error);
+      if (!data.files || !data.files.length) throw new Error('找不到符合期間的歸檔報表');
+
+      setHistStatus('解析中… 0 / ' + data.files.length);
+
+      var parsed = 0;
+      histStoreMap   = {};
+      histStoreOrder = [];
+
+      data.files.forEach(function(f) {
+        var bytes = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
+        var wb  = XLSX.read(bytes, { type: 'array', raw: true });
+        var ws  = wb.Sheets[wb.SheetNames[0]];
+        var raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        var result = parseSingleFile(raw);
+        if (result) {
+          /* Filter rows to requested date range */
+          result.rows = result.rows.filter(function(r){
+            return r.date >= dateRange.from && r.date <= dateRange.to;
+          });
+          if (histStoreMap[result.name]) {
+            /* Merge if same store from multiple months */
+            result.rows.forEach(function(r){ histStoreMap[result.name].push(r); });
+          } else {
+            histStoreMap[result.name] = result.rows;
+            histStoreOrder.push(result.name);
+          }
+        }
+        parsed++;
+        setHistStatus('解析中… ' + parsed + ' / ' + data.files.length);
+      });
+
+      histStoreOrder.sort(function(a,b){
+        var na=parseInt(a), nb=parseInt(b);
+        return (!isNaN(na)&&!isNaN(nb)) ? na-nb : a.localeCompare(b,'zh-TW');
+      });
+
+      histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
+      hRebuildAllRows();
+      hBuildStoreChips();
+      hBuildChips();
+
+      document.getElementById('histResults').style.display = '';
+      document.getElementById('histRangeLabel').textContent = dateRange.label;
+      setHistStatus('✓ 已載入 ' + histStoreOrder.length + ' 家店，' + histAllRows.length + ' 筆資料', 'ok');
+      hRender();
+    })
+    .catch(function(err) { setHistStatus('載入失敗：' + err.message, 'err'); })
+    .finally(function()  { btn.disabled = false; });
+}
+
+function getHistDateRange() {
+  if (histMode === 'month') {
+    if (!histSelMonth) return null;
+    var yr = parseInt(histSelMonth.slice(0,4));
+    var mo = parseInt(histSelMonth.slice(4,6));
+    var from = histSelMonth + '01';
+    var lastDay = new Date(yr, mo, 0).getDate();
+    var to   = histSelMonth + lastDay;
+    return { from: from, to: to, label: yr + ' 年 ' + mo + ' 月' };
+  } else {
+    /* FY mode */
+    if (!histSelFYQ) return null;
+    var selW = Object.keys(histSelWeeks);
+    var weeks = FY_WEEK_DATES[histSelFYQ] || {};
+    var wNames = selW.length
+      ? selW.sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); })
+      : Object.keys(weeks).sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); });
+    if (!wNames.length) return null;
+    var from = weeks[wNames[0]].start;
+    var to   = weeks[wNames[wNames.length-1]].end;
+    var wLabel = selW.length ? wNames.join(', ') : 'W1–W13';
+    return { from: from, to: to, label: histSelFYQ + ' · ' + wLabel };
+  }
+}
+
+function setHistStatus(msg, cls) {
+  var el = document.getElementById('histStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'hist-status' + (cls ? ' ' + cls : '');
+}
+
+/* ── History render helpers (mirror of main render) ── */
+function hRebuildAllRows() {
+  if (histCurStore === null) {
+    histAllRows = [];
+    histStoreOrder.forEach(function(s){
+      histStoreMap[s].forEach(function(r){ histAllRows.push(r); });
+    });
+  } else {
+    histAllRows = histStoreMap[histCurStore] ? histStoreMap[histCurStore].slice() : [];
+  }
+}
+
+function hBuildStoreChips() {
+  var el = document.getElementById('hist-store-chips');
+  if (!el) return;
+  el.innerHTML = '';
+  var all = mkEl('div','chip'+(histCurStore===null?' on':''),'全部門市');
+  all.addEventListener('click', function(){ hPickStore(null); });
+  el.appendChild(all);
+  histStoreOrder.forEach(function(s){
+    var c = mkEl('div','chip'+(histCurStore===s?' on':''),s);
+    c.dataset.store = s;
+    c.addEventListener('click', function(){ hPickStore(s); });
+    el.appendChild(c);
+  });
+}
+
+function hPickStore(s) {
+  histCurStore = s; histCurStaff = null; histColFilters = {};
+  document.querySelectorAll('.hcol-filter').forEach(function(i){ i.value=''; });
+  hRebuildAllRows(); hBuildStoreChips(); hBuildChips(); hRender();
+}
+
+function hBuildChips() {
+  var ids = {};
+  histAllRows.forEach(function(r){ ids[r.id] = true; });
+  var el = document.getElementById('hist-chips');
+  if (!el) return;
+  el.innerHTML = '';
+  var all = mkEl('div','chip on','全部人員');
+  all.addEventListener('click', function(){ hPick(null); });
+  el.appendChild(all);
+  Object.keys(ids).sort().forEach(function(id){
+    var c = mkEl('div','chip',id);
+    c.dataset.id = id;
+    c.addEventListener('click', function(){ hPick(id); });
+    el.appendChild(c);
+  });
+  if (!window._histTableInit) {
+    window._histTableInit = true;
+    hInitTableControls();
+  }
+}
+
+function hPick(id) {
+  histCurStaff = id;
+  document.querySelectorAll('#hist-chips .chip').forEach(function(c){
+    c.classList.toggle('on', id===null ? !c.dataset.id : c.dataset.id===id);
+  });
+  hRender();
+}
+
+function hSetFilter(btn) {
+  histCurFilter = btn.dataset.f;
+  document.querySelectorAll('#histResults .ftab').forEach(function(t){ t.classList.toggle('on', t===btn); });
+  hRender();
+}
+
+function hInitTableControls() {
+  document.querySelectorAll('#hthead-sort th').forEach(function(th){
+    th.addEventListener('click', function(){
+      var col = th.dataset.col;
+      if (histSortCol===col) {
+        histSortDir = -histSortDir;
+        th.classList.toggle('sort-asc',  histSortDir===1);
+        th.classList.toggle('sort-desc', histSortDir===-1);
+      } else {
+        document.querySelectorAll('#hthead-sort th').forEach(function(t){ t.classList.remove('sort-asc','sort-desc'); });
+        histSortCol=col; histSortDir=1; th.classList.add('sort-asc');
+      }
+      hRender();
+    });
+  });
+  document.querySelectorAll('.hcol-filter').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      histColFilters[inp.dataset.col] = inp.value.toLowerCase().trim();
+      hRender();
+    });
+  });
+}
+
+function hRender() {
+  var base = histCurStaff
+    ? histAllRows.filter(function(r){ return r.id===histCurStaff; })
+    : histAllRows;
+
+  document.getElementById('hn-care').textContent  = base.filter(function(r){return r.c1==='Care';}).reduce(function(s,r){return s+r.qty;},0);
+  document.getElementById('hn-cpu').textContent   = base.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);
+  document.getElementById('hn-ipad').textContent  = base.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
+
+  var dsl = document.getElementById('hist-detail-label');
+  if (dsl) dsl.textContent = (histCurStore || '全部門市') ? '· '+(histCurStore||'全部門市') : '';
+
+  var data = histCurFilter==='all' ? base : base.filter(function(r){return r.c1===histCurFilter;});
+  var activeF = Object.keys(histColFilters).filter(function(k){return histColFilters[k];});
+  if (activeF.length) data = data.filter(function(r){
+    return activeF.every(function(k){ return String(r[k]||'').toLowerCase().indexOf(histColFilters[k])!==-1; });
+  });
+  if (histSortCol) data = data.slice().sort(function(a,b){
+    var av=a[histSortCol], bv=b[histSortCol];
+    return typeof av==='number'&&typeof bv==='number'
+      ? histSortDir*(av-bv)
+      : histSortDir*String(av).localeCompare(String(bv),'zh-TW');
+  });
+
+  var multiStore = (histCurStore===null && histStoreOrder.length>1);
+  document.querySelectorAll('.hcol-store').forEach(function(el){ el.style.display = multiStore ? '' : 'none'; });
+
+  var tbody = document.getElementById('htbody');
+  tbody.innerHTML = !data.length
+    ? '<tr><td colspan="8"><div class="empty">沒有符合的資料</div></td></tr>'
+    : data.map(function(r){
+        var k = r.c1.toLowerCase();
+        var sc = multiStore ? '<td class="mono" style="color:#a78bfa;font-size:12px">'+(r.store||'')+'</td>' : '';
+        return '<tr>'+sc
+          +'<td class="mono accent">'+r.id+'</td>'
+          +'<td class="mono muted">'+r.date+'</td>'
+          +'<td><span class="tag tag-'+k+'">'+r.c1+'</span></td>'
+          +'<td class="muted">'+r.c2+'</td>'
+          +'<td>'+r.c3+'</td>'
+          +'<td class="muted">'+r.shortName+'</td>'
+          +'<td class="qty">'+r.qty+'</td></tr>';
+      }).join('');
+
+  hRenderExport(base);
+  hRenderCharts(base);
+}
+
+function hRenderCharts(base) {
+  ['CPU','iPad'].forEach(function(cat) {
+    var id = cat==='CPU' ? 'hchart-cpu' : 'hchart-ipad';
+    var bc = cat==='CPU' ? 'cpu-bar' : 'ipad-bar';
+    var vc = cat==='CPU' ? 'cpu-val' : 'ipad-val';
+    var agg = {};
+    base.filter(function(r){return r.c1===cat;}).forEach(function(r){
+      var k=r.c2||r.c3; agg[k]=(agg[k]||0)+r.qty;
+    });
+    var items=Object.keys(agg).map(function(k){return{label:k,val:agg[k]};}).sort(function(a,b){return b.val-a.val;});
+    var max=items.length?items[0].val:1;
+    var el=document.getElementById(id); if (!el) return;
+    el.innerHTML=!items.length?'<div class="empty">無資料</div>':items.map(function(item){
+      var pct=Math.round(item.val/max*100);
+      return '<div class="chart-row"><div class="chart-label" title="'+item.label+'">'+item.label+'</div>'
+        +'<div class="chart-bar-wrap"><div class="chart-bar '+bc+'" style="width:'+pct+'%"></div></div>'
+        +'<div class="chart-val '+vc+'">'+item.val+'</div></div>';
+    }).join('');
+  });
+}
+
+function hRenderExport(base) {
+  /* CPU/iPad table */
+  var staffIds=[];
+  base.forEach(function(r){if(staffIds.indexOf(r.id)===-1)staffIds.push(r.id);});
+  staffIds.sort();
+  var staffList = histCurStaff ? [histCurStaff] : staffIds;
+  document.getElementById('hexp-ci-body').innerHTML = staffList.map(function(id){
+    var rr=base.filter(function(r){return r.id===id;});
+    var cpu=rr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);
+    var ipad=rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
+    return '<tr><td class="mono accent">'+id+'</td><td class="qty">'+cpu+'</td><td class="qty">'+ipad+'</td></tr>';
+  }).join('');
+
+  /* Care pivot */
+  var careRows=base.filter(function(r){return r.c1==='Care';});
+  var snSet=[];
+  careRows.forEach(function(r){var sn=r.c3||r.shortName;if(snSet.indexOf(sn)===-1)snSet.push(sn);});
+  snSet.sort();
+  var pivot={};
+  staffList.forEach(function(id){pivot[id]={};});
+  careRows.forEach(function(r){var sn=r.c3||r.shortName;if(!pivot[r.id])pivot[r.id]={};pivot[r.id][sn]=(pivot[r.id][sn]||0)+r.qty;});
+  var careStaff=staffList.filter(function(id){return careRows.some(function(r){return r.id===id;});});
+  document.getElementById('hexp-care-head').innerHTML='<th style="color:#fff;font-size:12px">小分類</th>'
+    +careStaff.map(function(id){return '<th class="mono accent" style="color:#fff;font-size:12px">'+id+'</th>';}).join('');
+  document.getElementById('hexp-care-body').innerHTML=snSet.map(function(sn){
+    return '<tr><td style="font-size:12px">'+sn+'</td>'
+      +careStaff.map(function(id){var v=(pivot[id]&&pivot[id][sn])?pivot[id][sn]:0;return v?'<td class="qty">'+v+'</td>':'<td class="muted">—</td>';}).join('')
+      +'</tr>';
+  }).join('');
+
+  /* Daily summary – full date range from histAllRows */
+  var TW_HOL = { '20260101':'元旦','20260217':'春節','20260218':'春節','20260219':'春節','20260220':'春節','20260221':'春節','20260222':'春節','20260228':'和平紀念日','20260404':'兒童節','20260503':'勞動節補假','20260505':'端午節','20260906':'中秋節' };
+  var WD = ['日','一','二','三','四','五','六'];
+  var allDates=[];
+  histAllRows.forEach(function(r){if(r.date&&r.date!=='—'&&allDates.indexOf(r.date)===-1)allDates.push(r.date);});
+  allDates.sort();
+  var dateSet=[];
+  if (allDates.length) {
+    var s=allDates[0], e=allDates[allDates.length-1];
+    var cur=new Date(parseInt(s.slice(0,4)),parseInt(s.slice(4,6))-1,parseInt(s.slice(6,8)));
+    var end=new Date(parseInt(e.slice(0,4)),parseInt(e.slice(4,6))-1,parseInt(e.slice(6,8)));
+    while(cur<=end){
+      dateSet.push(''+cur.getFullYear()+('0'+(cur.getMonth()+1)).slice(-2)+('0'+cur.getDate()).slice(-2));
+      cur=new Date(cur.getTime()+86400000);
+    }
+  }
+  var tc=0,ti=0,ta=0;
+  document.getElementById('hexp-daily-body').innerHTML = dateSet.map(function(d){
+    var dr=base.filter(function(r){return r.date===d;});
+    var cpu=dr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);
+    var ipad=dr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
+    var care=dr.filter(function(r){return r.c1==='Care';}).reduce(function(s,r){return s+r.qty;},0);
+    tc+=cpu; ti+=ipad; ta+=care;
+    var y=parseInt(d.slice(0,4)),m=parseInt(d.slice(4,6))-1,dd=parseInt(d.slice(6,8));
+    var wd=new Date(y,m,dd).getDay();
+    var isRed=wd===0||wd===6||!!TW_HOL[d];
+    var qw=QW_MAP[d]||'';
+    var qwP=qw.split(' ');
+    var dStyle=isRed?'color:#f87171':'color:#cbd5e1';
+    return '<tr>'
+      +'<td style="font-family:\'DM Mono\',monospace;font-size:12px;'+dStyle+'">'+d+' ('+WD[wd]+')'+(TW_HOL[d]?' · '+TW_HOL[d]:'')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[0]||'')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[1]||'')+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(cpu>0?'color:var(--cpu)':'color:#94a3b8')+'">'+cpu+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(ipad>0?'color:var(--ipad)':'color:#94a3b8')+'">'+ipad+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(care>0?'color:var(--care)':'color:#94a3b8')+'">'+care+'</td>'
+      +'</tr>';
+  }).join('')
+  +'<tr style="border-top:2px solid var(--border);font-weight:700">'
+  +'<td style="font-family:\'DM Mono\',monospace;color:var(--text);font-weight:700">總計</td><td></td><td></td>'
+  +'<td class="qty" style="text-align:right;padding-right:20px;color:var(--cpu);font-weight:700;font-size:17px">'+tc+'</td>'
+  +'<td class="qty" style="text-align:right;padding-right:20px;color:var(--ipad);font-weight:700;font-size:17px">'+ti+'</td>'
+  +'<td class="qty" style="text-align:right;padding-right:20px;color:var(--care);font-weight:700;font-size:17px">'+ta+'</td>'
+  +'</tr>';
+}
+
+function hExportCSV(type) {
+  var base = histCurStaff
+    ? histAllRows.filter(function(r){return r.id===histCurStaff;})
+    : histAllRows;
+  var rows = [];
+  var staffIds=[]; base.forEach(function(r){if(staffIds.indexOf(r.id)===-1)staffIds.push(r.id);}); staffIds.sort();
+  var staffList = histCurStaff ? [histCurStaff] : staffIds;
+  if (type==='cpu-ipad') {
+    rows.push(['員工編號','CPU','iPad']);
+    staffList.forEach(function(id){
+      var rr=base.filter(function(r){return r.id===id;});
+      rows.push([id,rr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0),
+                    rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0)]);
+    });
+  } else if (type==='daily') {
+    rows.push(['日期','CPU','iPad','Care']);
+    var allD=[]; histAllRows.forEach(function(r){if(r.date&&r.date!=='—'&&allD.indexOf(r.date)===-1)allD.push(r.date);}); allD.sort();
+    var ds=[]; if(allD.length){var s=allD[0],e=allD[allD.length-1];var c=new Date(parseInt(s.slice(0,4)),parseInt(s.slice(4,6))-1,parseInt(s.slice(6,8)));var en=new Date(parseInt(e.slice(0,4)),parseInt(e.slice(4,6))-1,parseInt(e.slice(6,8)));while(c<=en){ds.push(''+c.getFullYear()+('0'+(c.getMonth()+1)).slice(-2)+('0'+c.getDate()).slice(-2));c=new Date(c.getTime()+86400000);}}
+    var WD2=['日','一','二','三','四','五','六'],tc2=0,ti2=0,ta2=0;
+    ds.forEach(function(d){var dr=base.filter(function(r){return r.date===d;});var y=parseInt(d.slice(0,4)),m=parseInt(d.slice(4,6))-1,dd=parseInt(d.slice(6,8));var lbl=d+' ('+WD2[new Date(y,m,dd).getDay()]+')';var cpu=dr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);var ipad=dr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);var care=dr.filter(function(r){return r.c1==='Care';}).reduce(function(s,r){return s+r.qty;},0);tc2+=cpu;ti2+=ipad;ta2+=care;rows.push([lbl,cpu,ipad,care]);});
+    rows.push(['總計',tc2,ti2,ta2]);
+  } else {
+    var careRows=base.filter(function(r){return r.c1==='Care';}); var snSet=[];
+    careRows.forEach(function(r){var sn=r.c3||r.shortName;if(snSet.indexOf(sn)===-1)snSet.push(sn);}); snSet.sort();
+    var pivot={}; careRows.forEach(function(r){var sn=r.c3||r.shortName;if(!pivot[r.id])pivot[r.id]={};pivot[r.id][sn]=(pivot[r.id][sn]||0)+r.qty;});
+    var careStaff=staffList.filter(function(id){return careRows.some(function(r){return r.id===id;});});
+    rows.push(['小分類'].concat(careStaff));
+    snSet.forEach(function(sn){rows.push([sn].concat(careStaff.map(function(id){return(pivot[id]&&pivot[id][sn])?pivot[id][sn]:0;})));});
+  }
+  var csv=rows.map(function(r){return r.map(function(v){var s=String(v);return s.indexOf(',')>-1||s.indexOf('"')>-1?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var u=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=u;a.download='history_'+type+'.csv';a.click();URL.revokeObjectURL(u);
 }
 </script>
 </body>
