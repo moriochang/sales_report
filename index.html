@@ -2414,7 +2414,7 @@ function hRenderWeekly(base) {
       : '';
     thRow += '<th style="color:#fff;text-align:center;min-width:80px;padding:8px 6px">'+w+date+'</th>';
   });
-  thRow += '<th style="color:var(--muted);text-align:center;min-width:60px;padding:8px 6px">合計</th></tr>';
+  thRow += '</tr>';
   if (thead) thead.innerHTML = thRow;
 
   /* ── Each data cell: value + delta badge in same td ── */
@@ -2427,8 +2427,8 @@ function hRenderWeekly(base) {
       if (diff === 0) {
         badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">±0</span>';
       } else {
-        var dc = diff > 0 ? '#34d399' : '#f87171';
-        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:600;margin-top:2px">'+(diff>0?'+':'')+diff+'</span>';
+        var dc = diff > 0 ? '#16a34a' : '#ef4444';
+        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':' ▼')+Math.abs(diff)+'</span>';
       }
     }
     return '<td style="text-align:center;padding:10px 6px">'
@@ -2448,24 +2448,12 @@ function hRenderWeekly(base) {
     return '<tr>'
       + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px;font-size:13px">'+label+'</td>'
       + cells
-      + '<td style="text-align:center;color:'+color+';font-weight:700;font-size:14px;padding:10px 6px">'+tot+'</td>'
       + '</tr>';
   }
 
-  var totalCells = weeks.map(function(w, i) {
-    var val  = (weekData[w] || {}).total || 0;
-    var prev = i > 0 ? ((weekData[weeks[i-1]] || {}).total || 0) : null;
-    return dataCell(val, prev, 'var(--text)');
-  }).join('');
-
   tbody.innerHTML =
       makeRow('CPU',  'cpu',  '#34d399')
-    + makeRow('iPad', 'ipad', '#60a5fa')
-    + '<tr style="border-top:2px solid var(--border)">'
-    + '<td class="mono" style="color:var(--muted);font-weight:700;padding:10px 12px;font-size:13px">合計</td>'
-    + totalCells
-    + '<td style="text-align:center;font-weight:700;font-size:14px;padding:10px 6px">'+(totCpu+totIpad)+'</td>'
-    + '</tr>';
+    + makeRow('iPad', 'ipad', '#60a5fa');
 
   panel.style.display = 'block';
 }
