@@ -2035,26 +2035,29 @@ function loadHistory() {
 
 /* 從已載入的當月資料（allRows）直接查詢 */
 function loadHistoryFromLoaded() {
-  if (!allRows || allRows.length === 0) {
+  if (!storeOrder || storeOrder.length === 0) {
     setHistStatus('請先在「當月報表」頁面載入報表資料', 'err'); return;
   }
   var dateRange = (histMode === 'all') ? null : getHistDateRange();
   if (histMode !== 'all' && !dateRange) {
     setHistStatus('請先選擇月份或季度／週數', 'err'); return;
   }
-  var filtered = dateRange
-    ? allRows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; })
-    : allRows.slice();
-  if (!filtered.length) {
-    setHistStatus('已載入資料中沒有符合該期間的資料', 'err'); return;
-  }
+  /* 從 storeDataMap 取全部門市完整資料（不受 curStore 篩選影響） */
   histStoreMap   = {};
   histStoreOrder = [];
-  filtered.forEach(function(r) {
-    var s = r.store || storeName || '未知門市';
-    if (!histStoreMap[s]) { histStoreMap[s] = []; histStoreOrder.push(s); }
-    histStoreMap[s].push(r);
+  storeOrder.forEach(function(s) {
+    var rows = storeDataMap[s] || [];
+    var filtered = dateRange
+      ? rows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; })
+      : rows.slice();
+    if (filtered.length) {
+      histStoreMap[s] = filtered;
+      histStoreOrder.push(s);
+    }
   });
+  if (!histStoreOrder.length) {
+    setHistStatus('已載入資料中沒有符合該期間的資料', 'err'); return;
+  }
   histStoreOrder.sort(function(a,b){
     var na=parseInt(a), nb=parseInt(b);
     return (!isNaN(na)&&!isNaN(nb)) ? na-nb : a.localeCompare(b,'zh-TW');
