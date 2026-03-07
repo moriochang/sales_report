@@ -797,19 +797,31 @@ tr:hover td { background: rgba(91,127,255,.04); }
 <!-- ══ 歷史查詢模式 ══ -->
 <div id="historyPanel">
 
-  <!-- Drive URL 設定（共用，只顯示一行） -->
+  <!-- 歷史查詢面板 -->
   <div class="hist-selector">
-    <div class="drive-section-title" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:12px">ARCHIVE FOLDER · Apps Script Web App URL</div>
-    <div class="drive-row">
-      <input class="drive-url-input" id="histWebAppUrl" type="text"
-        placeholder="貼上 Apps Script Web App URL（與上方共用）…"
-        oninput="syncDriveUrl(this.value)">
+
+    <!-- 資料來源選擇 -->
+    <div class="drive-section-title" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:12px">DATA SOURCE</div>
+    <div class="hist-mode-tabs" style="margin-bottom:16px">
+      <button class="hist-tab on" id="histSrcLoaded" onclick="switchHistSrc('loaded')">📂 使用已載入資料</button>
+      <button class="hist-tab"   id="histSrcDrive"  onclick="switchHistSrc('drive')">☁ 從 Drive 歸檔載入</button>
     </div>
 
-    <!-- 月份 / 季度 tab -->
-    <div class="hist-mode-tabs" style="margin-top:16px">
+    <!-- Drive URL（只有選 Drive 時才顯示） -->
+    <div id="histDriveUrlRow" style="display:none;margin-bottom:16px">
+      <div class="drive-row">
+        <input class="drive-url-input" id="histWebAppUrl" type="text"
+          placeholder="貼上 Apps Script Web App URL…"
+          oninput="syncDriveUrl(this.value)">
+      </div>
+    </div>
+
+    <!-- 查詢方式 tab -->
+    <div class="drive-section-title" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:10px">FILTER BY</div>
+    <div class="hist-mode-tabs" style="margin-bottom:16px">
       <button class="hist-tab on" id="histTabMonth" onclick="switchHistMode('month')">依月份</button>
       <button class="hist-tab"   id="histTabFY"    onclick="switchHistMode('fy')">依季度／週數</button>
+      <button class="hist-tab"   id="histTabAll"   onclick="switchHistMode('all')">全部資料</button>
     </div>
 
     <!-- 月份選擇 -->
@@ -825,15 +837,15 @@ tr:hover td { background: rgba(91,127,255,.04); }
           <div class="fy-q-chips" id="fyQChips"></div>
         </div>
         <div class="fy-week-col">
-          <div class="fy-quarter-label">WEEK（可多選）</div>
+          <div class="fy-quarter-label">WEEK（可多選，不選＝全季）</div>
           <div class="fy-w-chips" id="fyWChips"></div>
         </div>
       </div>
     </div>
 
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px">
       <button class="hist-load-btn" id="histLoadBtn" onclick="loadHistory()">
-        ☁ 載入選定期間
+        🔍 查詢
       </button>
       <div class="hist-status" id="histStatus"></div>
     </div>
@@ -1989,8 +2001,8 @@ function mkEl(tag, cls, html) {
 ══════════════════════════════════════════ */
 function switchMode(mode) {
   var isCurrent = mode === 'current';
-  document.getElementById('currentPanel').style.display  = isCurrent ? '' : 'none';
-  document.getElementById('historyPanel').style.display  = isCurrent ? 'none' : '';
+  document.getElementById('currentPanel').style.display  = isCurrent ? 'block' : 'none';
+  document.getElementById('historyPanel').style.display  = isCurrent ? 'none' : 'block';
   document.getElementById('modeCurrentBtn').classList.toggle('on',  isCurrent);
   document.getElementById('modeHistBtn').classList.toggle('on',    !isCurrent);
   if (!isCurrent && !histInitDone) initHistoryPanel();
@@ -2027,16 +2039,25 @@ function getQWMap() {
 }
 
 /* ── Init ── */
+var histSrc = 'loaded'; /* 'loaded' | 'drive' */
+
 function initHistoryPanel() {
   histInitDone = true;
 
-  /* Sync URL from current panel */
+  /* Sync URL */
   var saved = (localStorage.getItem('driveWebAppUrl') || '').trim();
   var el = document.getElementById('histWebAppUrl');
   if (el && saved) el.value = saved;
 
   buildMonthGrid();
   buildFYPicker();
+}
+
+function switchHistSrc(src) {
+  histSrc = src;
+  document.getElementById('histSrcLoaded').classList.toggle('on', src === 'loaded');
+  document.getElementById('histSrcDrive').classList.toggle('on',  src === 'drive');
+  document.getElementById('histDriveUrlRow').style.display = src === 'drive' ? '' : 'none';
 }
 
 function syncDriveUrl(val) {
@@ -2203,20 +2224,74 @@ function switchHistMode(mode) {
   histMode = mode;
   document.getElementById('histTabMonth').classList.toggle('on', mode === 'month');
   document.getElementById('histTabFY').classList.toggle('on',    mode === 'fy');
+  document.getElementById('histTabAll').classList.toggle('on',   mode === 'all');
   document.getElementById('monthPicker').style.display = mode === 'month' ? '' : 'none';
   document.getElementById('fyPicker').style.display    = mode === 'fy'    ? '' : 'none';
 }
 
-/* ── Load history from Drive ── */
+/* ── Load history ── */
 function loadHistory() {
-  var url = (localStorage.getItem('driveWebAppUrl') || '').trim();
-  if (!url) {
-    setHistStatus('請先在「當月報表」頁面設定 Web App URL', 'err'); return;
+  if (histSrc === 'loaded') {
+    loadHistoryFromLoaded();
+  } else {
+    loadHistoryFromDrive();
+  }
+}
+
+/* 從已載入的當月資料（allRows）直接查詢 */
+function loadHistoryFromLoaded() {
+  if (!allRows || allRows.length === 0) {
+    setHistStatus('請先在「當月報表」頁面載入報表資料', 'err'); return;
   }
 
-  /* Determine date range to request */
-  var dateRange = getHistDateRange();
-  if (!dateRange) {
+  var dateRange = histMode === 'all' ? null : getHistDateRange();
+  if (histMode !== 'all' && !dateRange) {
+    setHistStatus('請先選擇月份或季度／週數', 'err'); return;
+  }
+
+  /* Filter allRows by date range */
+  var filtered = dateRange
+    ? allRows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; })
+    : allRows.slice();
+
+  if (!filtered.length) {
+    setHistStatus('已載入資料中沒有符合該期間的資料', 'err'); return;
+  }
+
+  /* Rebuild histStoreMap from filtered rows */
+  histStoreMap   = {};
+  histStoreOrder = [];
+  filtered.forEach(function(r) {
+    if (!histStoreMap[r.store]) {
+      histStoreMap[r.store] = [];
+      histStoreOrder.push(r.store);
+    }
+    histStoreMap[r.store].push(r);
+  });
+  histStoreOrder.sort(function(a,b){
+    var na=parseInt(a), nb=parseInt(b);
+    return (!isNaN(na)&&!isNaN(nb)) ? na-nb : a.localeCompare(b,'zh-TW');
+  });
+
+  histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
+  hRebuildAllRows();
+  hBuildStoreChips();
+  hBuildChips();
+  document.getElementById('histResults').style.display = 'block';
+  document.getElementById('histRangeLabel').textContent = dateRange ? dateRange.label : '全部資料';
+  setHistStatus('✓ ' + histAllRows.length + ' 筆資料', 'ok');
+  hRender();
+}
+
+/* 從 Drive 歸檔資料夾載入 */
+function loadHistoryFromDrive() {
+  var url = (localStorage.getItem('driveWebAppUrl') || '').trim();
+  if (!url) {
+    setHistStatus('請先設定 Web App URL', 'err'); return;
+  }
+
+  var dateRange = histMode === 'all' ? null : getHistDateRange();
+  if (histMode !== 'all' && !dateRange) {
     setHistStatus('請先選擇月份或季度／週數', 'err'); return;
   }
 
@@ -2224,34 +2299,34 @@ function loadHistory() {
   btn.disabled = true;
   setHistStatus('☁ 連線中…');
 
-  /* Pass date filter as query params so Apps Script can filter */
-  var fetchUrl = url + '?mode=archive&from=' + dateRange.from + '&to=' + dateRange.to;
+  var fetchUrl = dateRange
+    ? url + '?mode=archive&from=' + dateRange.from + '&to=' + dateRange.to
+    : url + '?mode=archive';
 
   fetch(fetchUrl)
     .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
     .then(function(data) {
       if (data.error) throw new Error(data.error);
       if (!data.files || !data.files.length) throw new Error('找不到符合期間的歸檔報表');
-
       setHistStatus('解析中… 0 / ' + data.files.length);
 
-      var parsed = 0;
       histStoreMap   = {};
       histStoreOrder = [];
+      var parsed = 0;
 
       data.files.forEach(function(f) {
-        var bytes = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
-        var wb  = XLSX.read(bytes, { type: 'array', raw: true });
-        var ws  = wb.Sheets[wb.SheetNames[0]];
-        var raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        var bytes  = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
+        var wb     = XLSX.read(bytes, { type: 'array', raw: true });
+        var ws     = wb.Sheets[wb.SheetNames[0]];
+        var raw    = XLSX.utils.sheet_to_json(ws, { header: 1 });
         var result = parseSingleFile(raw);
         if (result) {
-          /* Filter rows to requested date range */
-          result.rows = result.rows.filter(function(r){
-            return r.date >= dateRange.from && r.date <= dateRange.to;
-          });
+          if (dateRange) {
+            result.rows = result.rows.filter(function(r){
+              return r.date >= dateRange.from && r.date <= dateRange.to;
+            });
+          }
           if (histStoreMap[result.name]) {
-            /* Merge if same store from multiple months */
             result.rows.forEach(function(r){ histStoreMap[result.name].push(r); });
           } else {
             histStoreMap[result.name] = result.rows;
@@ -2271,9 +2346,8 @@ function loadHistory() {
       hRebuildAllRows();
       hBuildStoreChips();
       hBuildChips();
-
-      document.getElementById('histResults').style.display = '';
-      document.getElementById('histRangeLabel').textContent = dateRange.label;
+      document.getElementById('histResults').style.display = 'block';
+      document.getElementById('histRangeLabel').textContent = dateRange ? dateRange.label : '全部歸檔資料';
       setHistStatus('✓ 已載入 ' + histStoreOrder.length + ' 家店，' + histAllRows.length + ' 筆資料', 'ok');
       hRender();
     })
@@ -2282,6 +2356,7 @@ function loadHistory() {
 }
 
 function getHistDateRange() {
+  if (histMode === 'all') return null;
   if (histMode === 'month') {
     if (!histSelMonth) return null;
     var yr = parseInt(histSelMonth.slice(0,4));
