@@ -333,6 +333,8 @@ tr:hover td { background: rgba(91,127,255,.04); }
   outline: none;
   transition: border-color .15s;
 }
+.hcol-filter { /* same as col-filter */ }
+.hcol-filter { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:5px 9px; font-size:11px; color:var(--text); font-family:'Noto Sans TC',sans-serif; outline:none; transition:border-color .15s; }
 .col-filter:focus { border-color: var(--accent); }
 .col-filter::placeholder { color: var(--muted); }
 
@@ -912,7 +914,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
               <th data-col="qty"       style="color:#fff">總計銷售數量 <span class="si">↕</span></th>
             </tr>
             <tr id="hthead-filter">
-              <th class="hcol-store" style="display:none"><input class="hcol-filter" data-col="store" placeholder="篩選…"></th>
+              <th class="hcol-store"  style="display:none"><input class="hcol-filter"  data-col="store" placeholder="篩選…"></th>
               <th><input class="hcol-filter" data-col="id"        placeholder="篩選…"></th>
               <th><input class="hcol-filter" data-col="date"      placeholder="篩選…"></th>
               <th><input class="hcol-filter" data-col="c1"        placeholder="篩選…"></th>
@@ -1329,6 +1331,7 @@ function pickStore(s) {
   colFilters = {};
   /* Reset column filter inputs */
   document.querySelectorAll('.col-filter').forEach(function(inp){ inp.value = ''; });
+  document.querySelectorAll('.hcol-filter').forEach(function(inp){ inp.value = ''; });
   rebuildAllRows();
   buildStoreChips();
   buildChips();
@@ -2277,7 +2280,7 @@ function hBuildStoreChips() {
 
 function hPickStore(s) {
   histCurStore = s; histCurStaff = null; histColFilters = {};
-  document.querySelectorAll('.hcol-filter').forEach(function(i){ i.value=''; });
+  document.querySelectorAll('.col-filter').forEach(function(i){ i.value=''; });
   hRebuildAllRows(); hBuildStoreChips(); hBuildChips(); hRender();
 }
 
@@ -2364,7 +2367,7 @@ function hRender() {
   });
 
   var multiStore = (histCurStore===null && histStoreOrder.length>1);
-  document.querySelectorAll('.hcol-store').forEach(function(el){ el.style.display = multiStore ? '' : 'none'; });
+  document.querySelectorAll('.col-store').forEach(function(el){ el.style.display = multiStore ? '' : 'none'; });
 
   var tbody = document.getElementById('htbody');
   tbody.innerHTML = !data.length
