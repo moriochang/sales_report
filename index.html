@@ -2369,7 +2369,7 @@ function hRender() {
   });
 
   var multiStore = (histCurStore===null && histStoreOrder.length>1);
-  document.querySelectorAll('.col-store').forEach(function(el){ el.style.display = multiStore ? '' : 'none'; });
+  document.querySelectorAll('.hcol-store').forEach(function(el){ el.style.display = multiStore ? '' : 'none'; });
 
   var tbody = document.getElementById('htbody');
   tbody.innerHTML = !data.length
