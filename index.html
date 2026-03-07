@@ -2400,61 +2400,71 @@ function hRenderWeekly(base) {
     weekData[w].total = weekData[w].cpu + weekData[w].ipad;
   });
 
-  var totCpu  = weeks.reduce(function(s,w){ return s+(weekData[w]||{}).cpu||0;  }, 0);
-  var totIpad = weeks.reduce(function(s,w){ return s+(weekData[w]||{}).ipad||0; }, 0);
+  var totCpu  = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).cpu||0);  }, 0);
+  var totIpad = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).ipad||0); }, 0);
 
-  function deltaCell(cur, prev, color) {
-    if (prev === null) return '<td style="text-align:center;color:var(--muted);font-size:11px">—</td>';
-    var diff = cur - prev;
-    if (diff === 0) return '<td style="text-align:center;color:var(--muted);font-size:12px">±0</td>';
-    var c = diff > 0 ? '#34d399' : '#f87171';
-    return '<td style="text-align:center;color:'+c+';font-weight:600;font-size:12px">'+(diff>0?'+':'')+diff+'</td>';
-  }
-
-  /* ── thead: 週次欄 ── */
-  /* 第一行：週次標頭（含日期） */
-  var thRow1 = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:60px"></th>';
+  /* ── thead: 1 th per week (value only, delta shown inline) + 合計 ── */
+  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:64px;padding:8px 12px"></th>';
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
-    var date = wd ? '<div style="font-size:9px;color:var(--muted);font-weight:400;margin-top:2px">'
-      + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
-      + '<br>'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>' : '';
-    thRow1 += '<th style="color:#fff;text-align:center;min-width:52px;padding:8px 6px">'+w+date+'</th>';
+    var date = wd
+      ? '<div style="font-size:9px;color:var(--muted);font-weight:400;margin-top:2px">'
+        + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
+        + '–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>'
+      : '';
+    thRow += '<th style="color:#fff;text-align:center;min-width:80px;padding:8px 6px">'+w+date+'</th>';
   });
-  thRow1 += '<th style="color:var(--muted);text-align:center;min-width:52px">合計</th></tr>';
-  if (thead) thead.innerHTML = thRow1;
+  thRow += '<th style="color:var(--muted);text-align:center;min-width:60px;padding:8px 6px">合計</th></tr>';
+  if (thead) thead.innerHTML = thRow;
 
-  /* ── tbody: CPU 行、iPad 行、合計行 ── */
+  /* ── Each data cell: value + delta badge in same td ── */
+  function dataCell(val, prev, color) {
+    var badge = '';
+    if (prev === null) {
+      badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">—</span>';
+    } else {
+      var diff = val - prev;
+      if (diff === 0) {
+        badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">±0</span>';
+      } else {
+        var dc = diff > 0 ? '#34d399' : '#f87171';
+        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:600;margin-top:2px">'+(diff>0?'+':'')+diff+'</span>';
+      }
+    }
+    return '<td style="text-align:center;padding:10px 6px">'
+      + '<span style="color:'+color+';font-weight:700;font-size:14px">'+val+'</span>'
+      + badge
+      + '</td>';
+  }
+
+  /* ── tbody rows ── */
   function makeRow(label, key, color) {
     var cells = weeks.map(function(w, i) {
       var val  = (weekData[w] || {})[key] || 0;
       var prev = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
-      return '<td style="text-align:center;color:'+color+';font-weight:600">'+val+'</td>'
-           + deltaCell(val, prev, color);
+      return dataCell(val, prev, color);
     }).join('');
-    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCpu+totIpad);
+    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCpu + totIpad);
     return '<tr>'
-      + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px">'+label+'</td>'
+      + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px;font-size:13px">'+label+'</td>'
       + cells
-      + '<td style="text-align:center;color:'+color+';font-weight:700">'+tot+'</td>'
+      + '<td style="text-align:center;color:'+color+';font-weight:700;font-size:14px;padding:10px 6px">'+tot+'</td>'
       + '</tr>';
   }
 
-  /* Each week: value cell + delta cell = 2 cols per week, so weeks*2 cols + label + total */
-  /* But we need interleaved delta — restructure: for each week show [val][Δ] pairs */
-  /* Actually simpler: 3 rows, each row has W1_val, W1_delta, W2_val, W2_delta ... total */
+  var totalCells = weeks.map(function(w, i) {
+    var val  = (weekData[w] || {}).total || 0;
+    var prev = i > 0 ? ((weekData[weeks[i-1]] || {}).total || 0) : null;
+    return dataCell(val, prev, 'var(--text)');
+  }).join('');
+
   tbody.innerHTML =
       makeRow('CPU',  'cpu',  '#34d399')
     + makeRow('iPad', 'ipad', '#60a5fa')
     + '<tr style="border-top:2px solid var(--border)">'
-    + '<td class="mono" style="color:var(--muted);font-weight:700;padding:10px 12px">合計</td>'
-    + weeks.map(function(w, i) {
-        var val  = (weekData[w] || {}).total || 0;
-        var prev = i > 0 ? ((weekData[weeks[i-1]] || {}).total || 0) : null;
-        return '<td style="text-align:center;font-weight:600">'+val+'</td>'
-             + deltaCell(val, prev, '');
-      }).join('')
-    + '<td style="text-align:center;font-weight:700">'+(totCpu+totIpad)+'</td>'
+    + '<td class="mono" style="color:var(--muted);font-weight:700;padding:10px 12px;font-size:13px">合計</td>'
+    + totalCells
+    + '<td style="text-align:center;font-weight:700;font-size:14px;padding:10px 6px">'+(totCpu+totIpad)+'</td>'
     + '</tr>';
 
   panel.style.display = 'block';
