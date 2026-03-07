@@ -2352,7 +2352,7 @@ function hRender() {
   document.getElementById('hn-ipad').textContent  = base.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
 
   var dsl = document.getElementById('hist-detail-label');
-  if (dsl) dsl.textContent = (histCurStore || '全部門市') ? '· '+(histCurStore||'全部門市') : '';
+  if (dsl) dsl.textContent = histCurStore ? '· ' + histCurStore : '';
 
   var data = histCurFilter==='all' ? base : base.filter(function(r){return r.c1===histCurFilter;});
   var activeF = Object.keys(histColFilters).filter(function(k){return histColFilters[k];});
