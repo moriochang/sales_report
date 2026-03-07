@@ -1842,6 +1842,7 @@ var histAllRows    = [];  /* all parsed rows across loaded archive files */
 var histStoreMap   = {};  /* { storeName: [rows] } */
 var histStoreOrder = [];
 var histCurStore   = null;
+var histStoreName  = '';
 var histCurStaff   = null;
 var histCurFilter  = 'all';
 var histColFilters = {};
@@ -2261,6 +2262,7 @@ function hRebuildAllRows() {
   } else {
     histAllRows = histStoreMap[histCurStore] ? histStoreMap[histCurStore].slice() : [];
   }
+  histStoreName = histCurStore || '全部門市';
 }
 
 function hBuildStoreChips() {
@@ -2352,7 +2354,7 @@ function hRender() {
   document.getElementById('hn-ipad').textContent  = base.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
 
   var dsl = document.getElementById('hist-detail-label');
-  if (dsl) dsl.textContent = histCurStore ? '· ' + histCurStore : '';
+  if (dsl) dsl.textContent = histStoreName ? '· ' + histStoreName : '';
 
   var data = histCurFilter==='all' ? base : base.filter(function(r){return r.c1===histCurFilter;});
   var activeF = Object.keys(histColFilters).filter(function(k){return histColFilters[k];});
