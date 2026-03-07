@@ -891,6 +891,20 @@ tr:hover td { background: rgba(91,127,255,.04); }
       </div>
     </div>
 
+    <!-- 週數統計表（僅季度模式顯示） -->
+    <div class="panel" id="hWeeklyPanel" style="display:none;margin-bottom:24px">
+      <div class="panel-head">
+        <span class="ptitle">週數銷售統計</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">CPU · iPad · 對比上週增減</span>
+      </div>
+      <div class="tbl-wrap" style="overflow-x:auto">
+        <table id="hWeeklyTable" style="min-width:100%">
+          <thead id="hWeeklyThead"></thead>
+          <tbody id="hWeeklyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panel-head">
         <span class="ptitle">明細列表 <span id="hist-detail-label" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-left:6px"></span></span>
@@ -2353,6 +2367,99 @@ function hInitTableControls() {
   });
 }
 
+/* ── Weekly stats table (FY mode only) ── */
+function hRenderWeekly(base) {
+  var panel = document.getElementById('hWeeklyPanel');
+  var thead = document.getElementById('hWeeklyThead');
+  var tbody = document.getElementById('hWeeklyBody');
+  if (!panel || !tbody) return;
+
+  if (histMode !== 'fy' || !histSelFYQ) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  /* Get sorted weeks */
+  var selW = Object.keys(histSelWeeks);
+  var allWeekKeys = Object.keys(FY_WEEK_DATES[histSelFYQ] || {})
+    .sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); });
+  var weeks = selW.length
+    ? selW.sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); })
+    : allWeekKeys;
+
+  /* Aggregate per week */
+  var weekData = {};
+  weeks.forEach(function(w) {
+    var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
+    if (!wd) return;
+    var wRows = base.filter(function(r){ return r.date >= wd.start && r.date <= wd.end; });
+    weekData[w] = {
+      cpu:  wRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0),
+      ipad: wRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0)
+    };
+    weekData[w].total = weekData[w].cpu + weekData[w].ipad;
+  });
+
+  var totCpu  = weeks.reduce(function(s,w){ return s+(weekData[w]||{}).cpu||0;  }, 0);
+  var totIpad = weeks.reduce(function(s,w){ return s+(weekData[w]||{}).ipad||0; }, 0);
+
+  function deltaCell(cur, prev, color) {
+    if (prev === null) return '<td style="text-align:center;color:var(--muted);font-size:11px">—</td>';
+    var diff = cur - prev;
+    if (diff === 0) return '<td style="text-align:center;color:var(--muted);font-size:12px">±0</td>';
+    var c = diff > 0 ? '#34d399' : '#f87171';
+    return '<td style="text-align:center;color:'+c+';font-weight:600;font-size:12px">'+(diff>0?'+':'')+diff+'</td>';
+  }
+
+  /* ── thead: 週次欄 ── */
+  /* 第一行：週次標頭（含日期） */
+  var thRow1 = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:60px"></th>';
+  weeks.forEach(function(w) {
+    var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
+    var date = wd ? '<div style="font-size:9px;color:var(--muted);font-weight:400;margin-top:2px">'
+      + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
+      + '<br>'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>' : '';
+    thRow1 += '<th style="color:#fff;text-align:center;min-width:52px;padding:8px 6px">'+w+date+'</th>';
+  });
+  thRow1 += '<th style="color:var(--muted);text-align:center;min-width:52px">合計</th></tr>';
+  if (thead) thead.innerHTML = thRow1;
+
+  /* ── tbody: CPU 行、iPad 行、合計行 ── */
+  function makeRow(label, key, color) {
+    var cells = weeks.map(function(w, i) {
+      var val  = (weekData[w] || {})[key] || 0;
+      var prev = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
+      return '<td style="text-align:center;color:'+color+';font-weight:600">'+val+'</td>'
+           + deltaCell(val, prev, color);
+    }).join('');
+    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCpu+totIpad);
+    return '<tr>'
+      + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px">'+label+'</td>'
+      + cells
+      + '<td style="text-align:center;color:'+color+';font-weight:700">'+tot+'</td>'
+      + '</tr>';
+  }
+
+  /* Each week: value cell + delta cell = 2 cols per week, so weeks*2 cols + label + total */
+  /* But we need interleaved delta — restructure: for each week show [val][Δ] pairs */
+  /* Actually simpler: 3 rows, each row has W1_val, W1_delta, W2_val, W2_delta ... total */
+  tbody.innerHTML =
+      makeRow('CPU',  'cpu',  '#34d399')
+    + makeRow('iPad', 'ipad', '#60a5fa')
+    + '<tr style="border-top:2px solid var(--border)">'
+    + '<td class="mono" style="color:var(--muted);font-weight:700;padding:10px 12px">合計</td>'
+    + weeks.map(function(w, i) {
+        var val  = (weekData[w] || {}).total || 0;
+        var prev = i > 0 ? ((weekData[weeks[i-1]] || {}).total || 0) : null;
+        return '<td style="text-align:center;font-weight:600">'+val+'</td>'
+             + deltaCell(val, prev, '');
+      }).join('')
+    + '<td style="text-align:center;font-weight:700">'+(totCpu+totIpad)+'</td>'
+    + '</tr>';
+
+  panel.style.display = 'block';
+}
+
 function hRender() {
   var base = histCurStaff
     ? histAllRows.filter(function(r){ return r.id===histCurStaff; })
@@ -2398,6 +2505,7 @@ function hRender() {
 
   hRenderExport(base);
   hRenderCharts(base);
+  hRenderWeekly(base);
 }
 
 function hRenderCharts(base) {
