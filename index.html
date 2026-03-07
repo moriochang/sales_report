@@ -862,7 +862,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
         🔍 查詢
       </button>
       <div class="hist-status" id="histStatus"></div>
-      <div id="histModeDebug" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)"></div>
+
     </div>
   </div>
 
@@ -1893,7 +1893,7 @@ function buildMonthGrid() {
   var now = new Date();
   var months = [];
   /* Start from 2024-10 (reasonable history start) */
-  var y = 2024, m = 10;
+  var y = 2026, m = 1;
   while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth() + 1)) {
     months.push('' + y + ('0' + m).slice(-2));
     m++;
@@ -2089,9 +2089,6 @@ function histAddFiles(files) {
 }
 
 function loadHistory() {
-  var dbg = document.getElementById('histModeDebug');
-  var dr = (histMode === 'all') ? null : getHistDateRange();
-  if (dbg) dbg.textContent = 'mode='+histMode+' | month='+histSelMonth+' | range='+(dr ? dr.from+'~'+dr.to : 'null');
   if (histSrc === 'loaded') {
     loadHistoryFromLoaded();
   } else {
@@ -2129,7 +2126,8 @@ function loadHistoryFromLoaded() {
     }
   });
   if (!histStoreOrder.length) {
-    setHistStatus('已載入資料中沒有符合該期間的資料', 'err'); return;
+    document.getElementById('histResults').style.display = 'none';
+    setHistStatus('✗ 已載入資料中沒有符合該期間的資料', 'err'); return;
   }
   histStoreOrder.sort(function(a,b){
     var na=parseInt(a), nb=parseInt(b);
@@ -2174,7 +2172,7 @@ function loadHistoryFromDrive() {
 
     /* Merge file lists — current files take priority (newer data) */
     var allFiles = (archiveData.files || []).concat(currentData.files || []);
-    if (!allFiles.length) throw new Error('找不到符合期間的報表');
+    if (!allFiles.length) { document.getElementById('histResults').style.display = 'none'; throw new Error('找不到符合期間的報表'); }
 
     setHistStatus('解析中… 0 / ' + allFiles.length);
     histStoreMap = {}; histStoreOrder = [];
