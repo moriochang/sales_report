@@ -2169,76 +2169,117 @@ function loadHistoryFromDrive() {
 
   var btn = document.getElementById('histLoadBtn');
   btn.disabled = true;
-  setHistStatus('☁ 連線中（歸檔）…');
+  setHistStatus('☁ 連線中…');
 
-  /* Build query params */
   var qp = dateRange ? '&from=' + dateRange.from + '&to=' + dateRange.to : '';
   var archiveUrl = url + '?mode=archive' + qp;
   var currentUrl = url + '?mode=current' + qp;
 
-  /* Fetch both folders in parallel */
   Promise.all([
     fetch(archiveUrl).then(function(r){ return r.ok ? r.json() : {files:[]}; }).catch(function(){ return {files:[]}; }),
     fetch(currentUrl).then(function(r){ return r.ok ? r.json() : {files:[]}; }).catch(function(){ return {files:[]}; })
   ]).then(function(results) {
-    var archiveData = results[0];
-    var currentData = results[1];
+    var archiveFiles = results[0].files || [];
+    var currentFiles = results[1].files || [];
 
-    /* Merge file lists — current files take priority (newer data) */
-    var allFiles = (archiveData.files || []).concat(currentData.files || []);
-    if (!allFiles.length) { document.getElementById('histResults').style.display = 'none'; throw new Error('找不到符合期間的報表'); }
-
-    setHistStatus('解析中… 0 / ' + allFiles.length);
-    histStoreMap = {}; histStoreOrder = [];
-    var parsed = 0;
-
-    allFiles.forEach(function(f) {
-      var bytes  = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
-      var wb     = XLSX.read(bytes, { type: 'array', raw: true });
-      var ws     = wb.Sheets[wb.SheetNames[0]];
-      var raw    = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      var result = parseSingleFile(raw);
-      if (result) {
-        var rows = dateRange
-          ? result.rows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; })
-          : result.rows;
-        if (rows.length) {
-          if (!histStoreMap[result.name]) {
-            histStoreMap[result.name] = [];
-            histStoreOrder.push(result.name);
-          }
-          rows.forEach(function(r){ histStoreMap[result.name].push(r); });
-        }
-      }
-      parsed++;
-      setHistStatus('解析中… ' + parsed + ' / ' + allFiles.length);
+    /* 合併，當月資料（current）同一門市同月份優先覆蓋歸檔 */
+    /* key = month_shop，current 先放，archive 若 key 已存在則略過 */
+    var fileMap = {};
+    currentFiles.forEach(function(f) {
+      var key = (f.meta.month || '') + '_' + (f.meta.shop || f.name);
+      fileMap[key] = f;
+    });
+    archiveFiles.forEach(function(f) {
+      var key = (f.meta.month || '') + '_' + (f.meta.shop || f.name);
+      if (!fileMap[key]) fileMap[key] = f; // current 已有就不覆蓋
     });
 
-    /* Deduplicate rows per store (same date+staffId+shortName) */
+    var allFiles = Object.values(fileMap);
+    if (!allFiles.length) {
+      document.getElementById('histResults').style.display = 'none';
+      throw new Error('找不到符合期間的報表');
+    }
+
+    /* 統計 json / xlsx 數量供顯示 */
+    var jsonCount = allFiles.filter(function(f){ return f.type === 'json'; }).length;
+    var xlsxCount = allFiles.length - jsonCount;
+    setHistStatus('載入中… 0 / ' + allFiles.length
+      + (jsonCount ? '（' + jsonCount + ' JSON, ' + xlsxCount + ' xlsx）' : ''));
+
+    histStoreMap = {}; histStoreOrder = [];
+    var done = 0;
+
+    allFiles.forEach(function(f) {
+      var rows = [];
+
+      if (f.type === 'json') {
+        /* ── JSON 格式：直接使用 rows，不需要解析 xlsx ── */
+        rows = f.rows || [];
+      } else {
+        /* ── xlsx 格式：走原本的解析流程 ── */
+        try {
+          var bytes  = Uint8Array.from(atob(f.base64), function(c){ return c.charCodeAt(0); });
+          var wb     = XLSX.read(bytes, { type: 'array', raw: true });
+          var ws     = wb.Sheets[wb.SheetNames[0]];
+          var raw    = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          var result = parseSingleFile(raw);
+          if (result) rows = result.rows;
+        } catch(e) {
+          console.warn('xlsx 解析失敗：', f.name, e);
+        }
+      }
+
+      /* 日期範圍篩選 */
+      if (dateRange) {
+        rows = rows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; });
+      }
+
+      /* 歸入 storeMap（以 store 欄位為 key） */
+      rows.forEach(function(r) {
+        var s = r.store || f.meta.shop || '未知門市';
+        if (!histStoreMap[s]) { histStoreMap[s] = []; histStoreOrder.push(s); }
+        histStoreMap[s].push(r);
+      });
+
+      done++;
+      setHistStatus('載入中… ' + done + ' / ' + allFiles.length);
+    });
+
+    /* 去重：同一筆資料可能從 current 和 archive 各帶一次 */
     histStoreOrder.forEach(function(s) {
       var seen = {};
       histStoreMap[s] = histStoreMap[s].filter(function(r) {
-        var key = r.date + '|' + r.staffId + '|' + r.shortName + '|' + r.qty;
+        var key = r.date + '|' + r.id + '|' + r.shortName + '|' + r.qty;
         if (seen[key]) return false;
         seen[key] = true;
         return true;
       });
     });
 
+    /* 移除沒有資料的門市 */
+    histStoreOrder = histStoreOrder.filter(function(s){ return histStoreMap[s] && histStoreMap[s].length > 0; });
+
+    if (!histStoreOrder.length) {
+      document.getElementById('histResults').style.display = 'none';
+      throw new Error('符合期間內無銷售資料');
+    }
+
     histStoreOrder.sort(function(a,b){
-      var na=parseInt(a), nb=parseInt(b);
-      return (!isNaN(na)&&!isNaN(nb)) ? na-nb : a.localeCompare(b,'zh-TW');
+      var na = parseInt(a), nb = parseInt(b);
+      return (!isNaN(na) && !isNaN(nb)) ? na - nb : a.localeCompare(b, 'zh-TW');
     });
     histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
     hRebuildAllRows();
     hBuildStoreChips();
     hBuildChips();
     document.getElementById('histResults').style.display = 'block';
-    document.getElementById('histRangeLabel').textContent = dateRange ? dateRange.label : '全部資料';
-    setHistStatus('✓ 已載入 ' + histStoreOrder.length + ' 家店，' + histAllRows.length + ' 筆資料', 'ok');
+    var modeLabel = histMode === 'all' ? '全部資料' : (dateRange ? dateRange.label : '（未選擇期間）');
+    document.getElementById('histRangeLabel').textContent = modeLabel;
+    setHistStatus('✓ ' + histStoreOrder.length + ' 家店　' + histAllRows.length + ' 筆　'
+      + jsonCount + ' JSON + ' + xlsxCount + ' xlsx', 'ok');
     hRender();
   })
-  .catch(function(err) { setHistStatus('載入失敗：' + err.message, 'err'); })
+  .catch(function(err) { setHistStatus('✗ ' + err.message, 'err'); })
   .finally(function()  { btn.disabled = false; });
 }
 
