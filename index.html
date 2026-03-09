@@ -2457,7 +2457,7 @@ function hRenderWeekly(base) {
   var totCare = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).care||0); }, 0);
 
   /* ── thead ── */
-  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:64px;padding:8px 12px"></th>';
+  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:70px;padding:8px 16px;border-right:1px solid var(--border)"></th>';
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     var date = wd
@@ -2467,7 +2467,7 @@ function hRenderWeekly(base) {
       : '';
     /* 未來週次文字變淡 */
     var wColor = (weekData[w] && weekData[w].hasData) ? '#fff' : 'var(--muted)';
-    thRow += '<th style="color:'+wColor+';text-align:center;min-width:80px;padding:8px 6px;font-size:15px">'+w+date+'</th>';
+    thRow += '<th style="color:'+wColor+';text-align:center;min-width:90px;padding:8px 10px;font-size:15px;border-left:1px solid var(--border)">'+w+date+'</th>';
   });
   thRow += '</tr>';
   if (thead) thead.innerHTML = thRow;
@@ -2489,7 +2489,7 @@ function hRenderWeekly(base) {
     }
     /* 未來週次數字變淡 */
     var valColor = hasData ? color : 'var(--muted)';
-    return '<td style="text-align:center;padding:10px 6px">'
+    return '<td style="text-align:center;padding:12px 10px;border-left:1px solid var(--border)">'
       + '<span style="color:'+valColor+';font-weight:700;font-size:14px">'+val+'</span>'
       + badge
       + '</td>';
@@ -2506,7 +2506,7 @@ function hRenderWeekly(base) {
     }).join('');
     var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCare);
     return '<tr>'
-      + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px;font-size:13px">'+label+'</td>'
+      + '<td class="mono" style="color:'+color+';font-weight:700;padding:12px 16px;font-size:13px;white-space:nowrap">'+label+'</td>'
       + cells
       + '</tr>';
   }
