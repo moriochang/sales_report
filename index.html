@@ -897,8 +897,8 @@ tr:hover td { background: rgba(91,127,255,.04); }
         <span class="ptitle">週數銷售統計</span>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">CPU · iPad · 對比上週增減</span>
       </div>
-      <div class="tbl-wrap" style="overflow-x:auto">
-        <table id="hWeeklyTable" style="min-width:100%">
+      <div class="tbl-wrap">
+        <table id="hWeeklyTable" style="width:100%;table-layout:fixed">
           <thead id="hWeeklyThead"></thead>
           <tbody id="hWeeklyBody"></tbody>
         </table>
@@ -2457,17 +2457,17 @@ function hRenderWeekly(base) {
   var totCare = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).care||0); }, 0);
 
   /* ── thead ── */
-  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:70px;padding:8px 16px;border-right:1px solid var(--border)"></th>';
+  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;width:52px;padding:6px 10px;border-right:1px solid var(--border)"></th>';
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     var date = wd
-      ? '<div style="font-size:9px;color:var(--muted);font-weight:400;margin-top:2px">'
+      ? '<div style="font-size:8px;color:var(--muted);font-weight:400;margin-top:1px;white-space:nowrap">'
         + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
         + '–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>'
       : '';
     /* 未來週次文字變淡 */
     var wColor = (weekData[w] && weekData[w].hasData) ? '#fff' : 'var(--muted)';
-    thRow += '<th style="color:'+wColor+';text-align:center;min-width:90px;padding:8px 10px;font-size:15px;border-left:1px solid var(--border)">'+w+date+'</th>';
+    thRow += '<th style="color:'+wColor+';text-align:center;width:7%;padding:6px 4px;font-size:13px;border-left:1px solid var(--border)">'+w+date+'</th>';
   });
   thRow += '</tr>';
   if (thead) thead.innerHTML = thRow;
@@ -2489,8 +2489,8 @@ function hRenderWeekly(base) {
     }
     /* 未來週次數字變淡 */
     var valColor = hasData ? color : 'var(--muted)';
-    return '<td style="text-align:center;padding:12px 10px;border-left:1px solid var(--border)">'
-      + '<span style="color:'+valColor+';font-weight:700;font-size:14px">'+val+'</span>'
+    return '<td style="text-align:center;padding:10px 4px;border-left:1px solid var(--border)">'
+      + '<span style="color:'+valColor+';font-weight:700;font-size:13px">'+val+'</span>'
       + badge
       + '</td>';
   }
@@ -2506,7 +2506,7 @@ function hRenderWeekly(base) {
     }).join('');
     var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCare);
     return '<tr>'
-      + '<td class="mono" style="color:'+color+';font-weight:700;padding:12px 16px;font-size:13px;white-space:nowrap">'+label+'</td>'
+      + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 10px;font-size:13px;white-space:nowrap">'+label+'</td>'
       + cells
       + '</tr>';
   }
