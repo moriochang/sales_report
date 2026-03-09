@@ -2428,23 +2428,35 @@ function hRenderWeekly(base) {
     ? selW.sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); })
     : allWeekKeys;
 
-  /* Aggregate per week */
+  /* 今天日期字串 YYYYMMDD，用來判斷週次是否已過 */
+  var todayStr = (function() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = ('0'+(d.getMonth()+1)).slice(-2);
+    var dd = ('0'+d.getDate()).slice(-2);
+    return '' + y + m + dd;
+  })();
+
+  /* Aggregate per week，同時標記該週是否有資料（週結束日 <= 今天） */
   var weekData = {};
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     if (!wd) return;
     var wRows = base.filter(function(r){ return r.date >= wd.start && r.date <= wd.end; });
+    var hasData = wd.end <= todayStr; /* 週已結束才算有完整資料 */
     weekData[w] = {
-      cpu:  wRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0),
-      ipad: wRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0)
+      cpu:     wRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0),
+      ipad:    wRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0),
+      care:    wRows.filter(function(r){ return r.c1==='Care'; }).reduce(function(s,r){ return s+r.qty; }, 0),
+      hasData: hasData
     };
-    weekData[w].total = weekData[w].cpu + weekData[w].ipad;
   });
 
   var totCpu  = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).cpu||0);  }, 0);
   var totIpad = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).ipad||0); }, 0);
+  var totCare = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).care||0); }, 0);
 
-  /* ── thead: 1 th per week (value only, delta shown inline) + 合計 ── */
+  /* ── thead ── */
   var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;min-width:64px;padding:8px 12px"></th>';
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
@@ -2453,15 +2465,18 @@ function hRenderWeekly(base) {
         + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
         + '–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>'
       : '';
-    thRow += '<th style="color:#fff;text-align:center;min-width:80px;padding:8px 6px">'+w+date+'</th>';
+    /* 未來週次文字變淡 */
+    var wColor = (weekData[w] && weekData[w].hasData) ? '#fff' : 'var(--muted)';
+    thRow += '<th style="color:'+wColor+';text-align:center;min-width:80px;padding:8px 6px;font-size:15px">'+w+date+'</th>';
   });
   thRow += '</tr>';
   if (thead) thead.innerHTML = thRow;
 
-  /* ── Each data cell: value + delta badge in same td ── */
-  function dataCell(val, prev, color) {
+  /* ── data cell ── */
+  function dataCell(val, prev, color, hasData, prevHasData) {
     var badge = '';
-    if (prev === null) {
+    /* W1 或前一週無資料：顯示 — */
+    if (prev === null || !prevHasData) {
       badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">—</span>';
     } else {
       var diff = val - prev;
@@ -2469,23 +2484,27 @@ function hRenderWeekly(base) {
         badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">±0</span>';
       } else {
         var dc = diff > 0 ? '#16a34a' : '#ef4444';
-        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':' ▼')+Math.abs(diff)+'</span>';
+        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':'▼')+Math.abs(diff)+'</span>';
       }
     }
+    /* 未來週次數字變淡 */
+    var valColor = hasData ? color : 'var(--muted)';
     return '<td style="text-align:center;padding:10px 6px">'
-      + '<span style="color:'+color+';font-weight:700;font-size:14px">'+val+'</span>'
+      + '<span style="color:'+valColor+';font-weight:700;font-size:14px">'+val+'</span>'
       + badge
       + '</td>';
   }
 
-  /* ── tbody rows ── */
+  /* ── make row ── */
   function makeRow(label, key, color) {
     var cells = weeks.map(function(w, i) {
-      var val  = (weekData[w] || {})[key] || 0;
-      var prev = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
-      return dataCell(val, prev, color);
+      var val       = (weekData[w] || {})[key] || 0;
+      var hasData   = (weekData[w] || {}).hasData || false;
+      var prev      = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
+      var prevHasData = i > 0 ? ((weekData[weeks[i-1]] || {}).hasData || false) : false;
+      return dataCell(val, prev, color, hasData, prevHasData);
     }).join('');
-    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCpu + totIpad);
+    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCare);
     return '<tr>'
       + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 12px;font-size:13px">'+label+'</td>'
       + cells
@@ -2494,7 +2513,8 @@ function hRenderWeekly(base) {
 
   tbody.innerHTML =
       makeRow('CPU',  'cpu',  '#34d399')
-    + makeRow('iPad', 'ipad', '#60a5fa');
+    + makeRow('iPad', 'ipad', '#60a5fa')
+    + makeRow('Care', 'care', '#a78bfa');
 
   panel.style.display = 'block';
 }
