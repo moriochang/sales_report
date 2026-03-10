@@ -2598,7 +2598,9 @@ function hRenderExport(base) {
     var rr=base.filter(function(r){return r.id===id;});
     var cpu=rr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);
     var ipad=rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
-    return '<tr><td class="mono accent">'+id+'</td><td class="qty">'+cpu+'</td><td class="qty">'+ipad+'</td></tr>';
+    var cpuCell  = cpu  ? '<td class="qty">'+cpu+'</td>'  : '<td class="qty" style="color:#475569">0</td>';
+    var ipadCell = ipad ? '<td class="qty">'+ipad+'</td>' : '<td class="qty" style="color:#475569">0</td>';
+    return '<tr><td class="mono accent">'+id+'</td>'+cpuCell+ipadCell+'</tr>';
   }).join('');
 
   /* Care pivot */
