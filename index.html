@@ -995,7 +995,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
 
 <!-- ══ Daily Detail Modal ══ -->
 <div id="dailyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)" onclick="closeDailyModal(event)">
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e2433;border:1px solid #334155;border-radius:16px;min-width:320px;max-width:480px;width:90%;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e2433;border:1px solid #334155;border-radius:16px;min-width:500px;max-width:780px;width:92%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #334155">
       <div>
         <span style="font-size:12px;color:#64748b;margin-right:8px">銷售明細</span>
@@ -1004,17 +1004,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
       </div>
       <button onclick="document.getElementById('dailyModal').style.display='none'" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1">✕</button>
     </div>
-    <div style="overflow-y:auto;padding:8px 0">
-      <table style="width:100%;border-collapse:collapse" id="dailyModalTable">
-        <thead>
-          <tr style="border-bottom:1px solid #334155">
-            <th style="text-align:left;padding:8px 20px;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase">小分類</th>
-            <th style="text-align:right;padding:8px 20px;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase">數量</th>
-          </tr>
-        </thead>
-        <tbody id="dailyModalBody"></tbody>
-      </table>
-    </div>
+    <div id="dailyModalBody" style="overflow-y:auto;display:flex;align-items:flex-start;max-height:60vh"></div>
     <div style="padding:12px 20px;border-top:1px solid #334155;display:flex;justify-content:flex-end">
       <span style="font-family:'DM Mono',monospace;font-size:13px;color:#94a3b8">合計 <span id="dailyModalTotal" style="color:#fff;font-weight:700"></span></span>
     </div>
@@ -2741,27 +2731,42 @@ function showDailyModal(event, date, rows) {
 
   var catColors = { CPU: '#34d399', iPad: '#60a5fa', Care: '#a78bfa' };
   var cats = ['CPU', 'iPad', 'Care'];
-  var tbody = document.getElementById('dailyModalBody');
-  tbody.innerHTML = '';
-
   var grandTotal = 0;
 
-  cats.forEach(function(cat) {
+  /* Build a column div per category */
+  var container = document.getElementById('dailyModalBody');
+  container.innerHTML = '';
+  container.style.cssText = 'display:flex;gap:0;align-items:flex-start;overflow:auto';
+
+  cats.forEach(function(cat, ci) {
     var catRows = rows.filter(function(r){ return r.c1 === cat; });
-    if (!catRows.length) return;
     var color = catColors[cat] || '#fff';
     var catTotal = catRows.reduce(function(s,r){ return s+r.qty; }, 0);
     grandTotal += catTotal;
 
-    /* ── 大分類 header ── */
-    var trCat = document.createElement('tr');
-    trCat.style.cssText = 'background:rgba(255,255,255,0.06);border-top:1px solid #334155';
-    var tdCat = document.createElement('td');
-    tdCat.colSpan = 2;
-    tdCat.style.cssText = 'padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:'+color;
-    tdCat.textContent = cat;
-    trCat.appendChild(tdCat);
-    tbody.appendChild(trCat);
+    var col = document.createElement('div');
+    col.style.cssText = 'flex:1;min-width:0;border-right:'+(ci<2?'1px solid #334155':'none');
+
+    /* ── Cat header ── */
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:10px 14px 8px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:'+color+';border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:baseline';
+    var hdrLabel = document.createElement('span');
+    hdrLabel.textContent = cat;
+    var hdrTotal = document.createElement('span');
+    hdrTotal.style.cssText = 'font-family:"DM Mono",monospace;font-size:16px;font-weight:700;color:'+color;
+    hdrTotal.textContent = catTotal;
+    hdr.appendChild(hdrLabel);
+    hdr.appendChild(hdrTotal);
+    col.appendChild(hdr);
+
+    if (!catRows.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'padding:12px 14px;font-size:12px;color:#475569';
+      empty.textContent = '—';
+      col.appendChild(empty);
+      container.appendChild(col);
+      return;
+    }
 
     /* ── 中分類 grouping ── */
     var c2Map = {};
@@ -2775,15 +2780,17 @@ function showDailyModal(event, date, rows) {
       var c2Rows = c2Map[c2];
       var c2Total = c2Rows.reduce(function(s,r){ return s+r.qty; }, 0);
 
-      /* 中分類 row */
-      var trC2 = document.createElement('tr');
-      trC2.style.cssText = 'background:rgba(255,255,255,0.02);border-top:1px solid #1e293b';
-      var tdC2 = document.createElement('td');
-      tdC2.colSpan = 2;
-      tdC2.style.cssText = 'padding:6px 16px 6px 24px;font-size:12px;color:#94a3b8;font-weight:600';
-      tdC2.textContent = c2 + '  (' + c2Total + ')';
-      trC2.appendChild(tdC2);
-      tbody.appendChild(trC2);
+      /* 中分類 label */
+      var c2Div = document.createElement('div');
+      c2Div.style.cssText = 'padding:7px 14px 4px;font-size:11px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.02);border-bottom:1px solid #1e293b;display:flex;justify-content:space-between';
+      var c2Label = document.createElement('span');
+      c2Label.textContent = c2;
+      var c2Qty = document.createElement('span');
+      c2Qty.style.cssText = 'font-family:"DM Mono",monospace;color:#64748b';
+      c2Qty.textContent = c2Total;
+      c2Div.appendChild(c2Label);
+      c2Div.appendChild(c2Qty);
+      col.appendChild(c2Div);
 
       /* ── 小分類 grouping ── */
       var c3Map = {};
@@ -2798,19 +2805,18 @@ function showDailyModal(event, date, rows) {
         var c3Total = c3Rows.reduce(function(s,r){ return s+r.qty; }, 0);
 
         /* 小分類 row */
-        var trC3 = document.createElement('tr');
-        trC3.style.cssText = 'border-top:1px solid #1a2235';
-        var tdC3Name = document.createElement('td');
-        tdC3Name.style.cssText = 'padding:6px 8px 6px 36px;font-size:13px;color:#cbd5e1';
-        tdC3Name.textContent = c3;
-        var tdC3Qty = document.createElement('td');
-        tdC3Qty.style.cssText = 'padding:6px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:13px;font-weight:600;color:'+color;
-        tdC3Qty.textContent = c3Total;
-        trC3.appendChild(tdC3Name);
-        trC3.appendChild(tdC3Qty);
-        tbody.appendChild(trC3);
+        var c3Div = document.createElement('div');
+        c3Div.style.cssText = 'padding:5px 14px 5px 20px;font-size:12px;color:#cbd5e1;border-bottom:1px solid #111827;display:flex;justify-content:space-between;align-items:center';
+        var c3Name = document.createElement('span');
+        c3Name.textContent = c3;
+        var c3Qty = document.createElement('span');
+        c3Qty.style.cssText = 'font-family:"DM Mono",monospace;font-size:13px;font-weight:600;color:'+color+';margin-left:8px;flex-shrink:0';
+        c3Qty.textContent = c3Total;
+        c3Div.appendChild(c3Name);
+        c3Div.appendChild(c3Qty);
+        col.appendChild(c3Div);
 
-        /* ── Short Name rows（若與 c3 相同則省略）── */
+        /* ── Short Name rows ── */
         var snMap = {};
         c3Rows.forEach(function(r){
           var sn = r.shortName || '';
@@ -2820,39 +2826,26 @@ function showDailyModal(event, date, rows) {
         var snKeys = Object.keys(snMap).filter(function(sn){ return sn && sn !== c3; });
         snKeys.sort();
         snKeys.forEach(function(sn) {
-          var trSN = document.createElement('tr');
-          trSN.style.cssText = 'border-top:1px solid #111827';
-          var tdSNName = document.createElement('td');
-          tdSNName.style.cssText = 'padding:4px 8px 4px 48px;font-size:11px;color:#64748b;font-family:"DM Mono",monospace';
-          tdSNName.textContent = sn;
-          var tdSNQty = document.createElement('td');
-          tdSNQty.style.cssText = 'padding:4px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:11px;color:#64748b';
-          tdSNQty.textContent = snMap[sn];
-          trSN.appendChild(tdSNName);
-          trSN.appendChild(tdSNQty);
-          tbody.appendChild(trSN);
+          var snDiv = document.createElement('div');
+          snDiv.style.cssText = 'padding:3px 14px 3px 28px;font-size:10px;color:#475569;border-bottom:1px solid #0f172a;display:flex;justify-content:space-between;font-family:"DM Mono",monospace';
+          var snName = document.createElement('span');
+          snName.textContent = sn;
+          var snQty = document.createElement('span');
+          snQty.style.cssText = 'flex-shrink:0;margin-left:6px';
+          snQty.textContent = snMap[sn];
+          snDiv.appendChild(snName);
+          snDiv.appendChild(snQty);
+          col.appendChild(snDiv);
         });
       });
     });
 
-    /* ── 大分類 總計 row ── */
-    var trTotal = document.createElement('tr');
-    trTotal.style.cssText = 'border-top:2px solid #334155;background:rgba(255,255,255,0.03)';
-    var tdTotalLabel = document.createElement('td');
-    tdTotalLabel.style.cssText = 'padding:8px 16px 8px 24px;font-size:12px;color:'+color+';font-weight:700';
-    tdTotalLabel.textContent = cat + ' 合計';
-    var tdTotalQty = document.createElement('td');
-    tdTotalQty.style.cssText = 'padding:8px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:15px;font-weight:700;color:'+color;
-    tdTotalQty.textContent = catTotal;
-    trTotal.appendChild(tdTotalLabel);
-    trTotal.appendChild(tdTotalQty);
-    tbody.appendChild(trTotal);
+    container.appendChild(col);
   });
 
   document.getElementById('dailyModalTotal').textContent = grandTotal;
   document.getElementById('dailyModal').style.display = 'block';
 }
-
 function closeDailyModal(event) {
   if (event.target === document.getElementById('dailyModal')) {
     document.getElementById('dailyModal').style.display = 'none';
