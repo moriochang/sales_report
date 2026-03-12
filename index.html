@@ -992,6 +992,33 @@ tr:hover td { background: rgba(91,127,255,.04); }
 
 </div><!-- /#historyPanel -->
 
+
+<!-- ══ Daily Detail Modal ══ -->
+<div id="dailyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)" onclick="closeDailyModal(event)">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e2433;border:1px solid #334155;border-radius:16px;min-width:320px;max-width:480px;width:90%;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #334155">
+      <div>
+        <span id="dailyModalDate" style="font-family:'DM Mono',monospace;font-size:13px;color:#94a3b8"></span>
+        <span id="dailyModalCat" style="margin-left:8px;font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px"></span>
+      </div>
+      <button onclick="document.getElementById('dailyModal').style.display='none'" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:8px 0">
+      <table style="width:100%;border-collapse:collapse" id="dailyModalTable">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;padding:8px 20px;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase">小分類</th>
+            <th style="text-align:right;padding:8px 20px;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase">數量</th>
+          </tr>
+        </thead>
+        <tbody id="dailyModalBody"></tbody>
+      </table>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #334155;display:flex;justify-content:flex-end">
+      <span style="font-family:'DM Mono',monospace;font-size:13px;color:#94a3b8">合計 <span id="dailyModalTotal" style="color:#fff;font-weight:700"></span></span>
+    </div>
+  </div>
+</div>
 </div><!-- /.container -->
 
 <script>
@@ -1688,9 +1715,9 @@ function renderExport() {
         + '<td style="' + dateStyle + '">' + dateLabel(d) + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.q + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.w + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;' + (cpu  > 0 ? 'color:var(--cpu)'  : 'color:#94a3b8') + '">' + cpu  + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;' + (ipad > 0 ? 'color:var(--ipad)' : 'color:#94a3b8') + '">' + ipad + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;' + (care > 0 ? 'color:var(--care)' : 'color:#94a3b8') + '">' + care + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(cpu>0?'pointer':'default')+';' + (cpu  > 0 ? 'color:var(--cpu)'  : 'color:#94a3b8') + '" '+(cpu>0?'onclick="showDailyModal(event,\''+d+'\',\'CPU\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'CPU\';})) + ')"':'')+'>' + cpu  + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(ipad>0?'pointer':'default')+';' + (ipad > 0 ? 'color:var(--ipad)' : 'color:#94a3b8') + '" '+(ipad>0?'onclick="showDailyModal(event,\''+d+'\',\'iPad\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'iPad\';})) + ')"':'')+'>' + ipad + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(care>0?'pointer':'default')+';' + (care > 0 ? 'color:var(--care)' : 'color:#94a3b8') + '" '+(care>0?'onclick="showDailyModal(event,\''+d+'\',\'Care\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'Care\';})) + ')"':'')+'>' + care + '</td>'
         + '</tr>';
     }).join('')
     + '<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2654,9 +2681,9 @@ function hRenderExport(base) {
       +'<td style="font-family:\'DM Mono\',monospace;font-size:12px;'+dStyle+'">'+d+' ('+WD[wd]+')'+(TW_HOL[d]?' · '+TW_HOL[d]:'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[0]||'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[1]||'')+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(cpu>0?'color:var(--cpu)':'color:#94a3b8')+'">'+cpu+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(ipad>0?'color:var(--ipad)':'color:#94a3b8')+'">'+ipad+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(care>0?'color:var(--care)':'color:#94a3b8')+'">'+care+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(cpu>0?'pointer':'default')+';'+(cpu>0?'color:var(--cpu)':'color:#94a3b8')+'""+(cpu>0?' onclick="showDailyModal(event,\''+d+'\',\'CPU\','+JSON.stringify(dr.filter(function(r){return r.c1===\'CPU\';}))+')""':'')+'>'+(cpu)+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(ipad>0?'pointer':'default')+';'+(ipad>0?'color:var(--ipad)':'color:#94a3b8')+'""+(ipad>0?' onclick="showDailyModal(event,\''+d+'\',\'iPad\','+JSON.stringify(dr.filter(function(r){return r.c1===\'iPad\';}))+')""':'')+'>'+(ipad)+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(care>0?'pointer':'default')+';'+(care>0?'color:var(--care)':'color:#94a3b8')+'""+(care>0?' onclick="showDailyModal(event,\''+d+'\',\'Care\','+JSON.stringify(dr.filter(function(r){return r.c1===\'Care\';}))+')""':'')+'>'+(care)+'</td>'
       +'</tr>';
   }).join('')
   +'<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2701,6 +2728,51 @@ function hExportCSV(type) {
   var u=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=u;a.download='history_'+type+'.csv';a.click();URL.revokeObjectURL(u);
 }
+
+/* ══ Daily Detail Modal ══ */
+function showDailyModal(event, date, cat, rows) {
+  event.stopPropagation();
+  var WD = ['日','一','二','三','四','五','六'];
+  var y=parseInt(date.slice(0,4)), m=parseInt(date.slice(4,6))-1, d=parseInt(date.slice(6,8));
+  var wd = new Date(y,m,d).getDay();
+  document.getElementById('dailyModalDate').textContent = date + ' (' + WD[wd] + ')';
+
+  var catEl = document.getElementById('dailyModalCat');
+  catEl.textContent = cat;
+  var catColors = { 'CPU': '#34d399', 'iPad': '#60a5fa', 'Care': '#a78bfa' };
+  var catBg     = { 'CPU': 'rgba(52,211,153,0.15)', 'iPad': 'rgba(96,165,250,0.15)', 'Care': 'rgba(167,139,250,0.15)' };
+  catEl.style.color = catColors[cat] || '#fff';
+  catEl.style.background = catBg[cat] || 'rgba(255,255,255,0.1)';
+
+  /* Aggregate by c3 */
+  var agg = {};
+  rows.forEach(function(r) {
+    var key = r.c3 || r.shortName || r.c2 || '—';
+    agg[key] = (agg[key] || 0) + r.qty;
+  });
+  var items = Object.keys(agg).map(function(k){ return { name: k, qty: agg[k] }; });
+  items.sort(function(a,b){ return b.qty - a.qty; });
+
+  var total = items.reduce(function(s,i){ return s + i.qty; }, 0);
+  document.getElementById('dailyModalTotal').textContent = total;
+
+  var color = catColors[cat] || '#fff';
+  document.getElementById('dailyModalBody').innerHTML = items.map(function(item) {
+    return '<tr style="border-bottom:1px solid #1e293b">'
+      + '<td style="padding:10px 20px;font-size:13px;color:#e2e8f0">' + item.name + '</td>'
+      + '<td style="padding:10px 20px;text-align:right;font-family:\'DM Mono\',monospace;font-size:14px;font-weight:700;color:' + color + '">' + item.qty + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('dailyModal').style.display = 'block';
+}
+
+function closeDailyModal(event) {
+  if (event.target === document.getElementById('dailyModal')) {
+    document.getElementById('dailyModal').style.display = 'none';
+  }
+}
+
 </script>
 </body>
 </html>
