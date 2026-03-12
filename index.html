@@ -998,8 +998,9 @@ tr:hover td { background: rgba(91,127,255,.04); }
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e2433;border:1px solid #334155;border-radius:16px;min-width:320px;max-width:480px;width:90%;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #334155">
       <div>
-        <span id="dailyModalDate" style="font-family:'DM Mono',monospace;font-size:13px;color:#94a3b8"></span>
-        <span id="dailyModalCat" style="margin-left:8px;font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px"></span>
+        <span style="font-size:12px;color:#64748b;margin-right:8px">銷售明細</span>
+        <span id="dailyModalDate" style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#e2e8f0"></span>
+        <span id="dailyModalCat" style="display:none"></span>
       </div>
       <button onclick="document.getElementById('dailyModal').style.display='none'" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1">✕</button>
     </div>
@@ -1711,14 +1712,13 @@ function renderExport() {
       var red = isRed(d);
       var dateStyle = red ? 'color:#f87171;font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis' : 'color:#cbd5e1;font-family:"DM Mono",monospace;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
       var qw = dateQW(d);
-      return '<tr>'
+      return '<tr data-date="' + d + '" style="cursor:pointer" onmouseenter="this.style.background=\'rgba(255,255,255,0.04)\'" onmouseleave="this.style.background=\'\'">'
         + '<td style="' + dateStyle + '">' + dateLabel(d) + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.q + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.w + '</td>'
-        + (function(){ var v=cpu; var cl=cpu>0?'var(--cpu)':'#94a3b8'; var td='<td class="qty" data-date="'+d+'" data-cat="CPU" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; return td; })()
-        + (function(){ var v=ipad; var cl=ipad>0?'var(--ipad)':'#94a3b8'; return '<td class="qty" data-date="'+d+'" data-cat="iPad" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; })()
-        + (function(){ var v=care; var cl=care>0?'var(--care)':'#94a3b8'; return '<td class="qty" data-date="'+d+'" data-cat="Care" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; })()
-        + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;color:'+(cpu>0?'var(--cpu)':'#94a3b8')+'">' + cpu + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;color:'+(ipad>0?'var(--ipad)':'#94a3b8')+'">' + ipad + '</td>'
+        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;color:'+(care>0?'var(--care)':'#94a3b8')+'">' + care + '</td>'
         + '</tr>';
     }).join('')
     + '<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2678,13 +2678,13 @@ function hRenderExport(base) {
     var qw=QW_MAP[d]||'';
     var qwP=qw.split(' ');
     var dStyle=isRed?'color:#f87171':'color:#cbd5e1';
-    return '<tr>'
+    return '<tr data-date="'+d+'" style="cursor:pointer" onmouseenter="this.style.background=\'rgba(255,255,255,0.04)\'" onmouseleave="this.style.background=\'\'">'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:12px;'+dStyle+'">'+d+' ('+WD[wd]+')'+(TW_HOL[d]?' · '+TW_HOL[d]:'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[0]||'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[1]||'')+'</td>'
-      +'<td class="qty" data-date="'+d+'" data-cat="CPU" style="text-align:right;padding-right:20px;font-size:14px;'+(cpu>0?'color:var(--cpu);cursor:pointer':'color:#94a3b8')+'">'+cpu+'</td>'
-      +'<td class="qty" data-date="'+d+'" data-cat="iPad" style="text-align:right;padding-right:20px;font-size:14px;'+(ipad>0?'color:var(--ipad);cursor:pointer':'color:#94a3b8')+'">'+ipad+'</td>'
-      +'<td class="qty" data-date="'+d+'" data-cat="Care" style="text-align:right;padding-right:20px;font-size:14px;'+(care>0?'color:var(--care);cursor:pointer':'color:#94a3b8')+'">'+care+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(cpu>0?'color:var(--cpu)':'color:#94a3b8')+'">'+cpu+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(ipad>0?'color:var(--ipad)':'color:#94a3b8')+'">'+ipad+'</td>'
+      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;'+(care>0?'color:var(--care)':'color:#94a3b8')+'">'+care+'</td>'
       +'</tr>';
   }).join('')
   +'<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2731,49 +2731,60 @@ function hExportCSV(type) {
 }
 
 /* ══ Daily Detail Modal ══ */
-function showDailyModal(event, date, cat, rows) {
+function showDailyModal(event, date, rows) {
   event.stopPropagation();
   var WD = ['日','一','二','三','四','五','六'];
   var y=parseInt(date.slice(0,4)), m=parseInt(date.slice(4,6))-1, d=parseInt(date.slice(6,8));
   var wd = new Date(y,m,d).getDay();
   document.getElementById('dailyModalDate').textContent = date + ' (' + WD[wd] + ')';
+  document.getElementById('dailyModalCat').textContent = '';
 
-  var catEl = document.getElementById('dailyModalCat');
-  catEl.textContent = cat;
   var catColors = { CPU: '#34d399', iPad: '#60a5fa', Care: '#a78bfa' };
-  var catBg     = { CPU: 'rgba(52,211,153,0.15)', iPad: 'rgba(96,165,250,0.15)', Care: 'rgba(167,139,250,0.15)' };
-  catEl.style.color = catColors[cat] || '#fff';
-  catEl.style.background = catBg[cat] || 'rgba(255,255,255,0.1)';
-
-  /* Aggregate by c3 */
-  var agg = {};
-  rows.forEach(function(r) {
-    var key = r.c3 || r.shortName || r.c2 || '—';
-    agg[key] = (agg[key] || 0) + r.qty;
-  });
-  var items = Object.keys(agg).map(function(k){ return { name: k, qty: agg[k] }; });
-  items.sort(function(a,b){ return b.qty - a.qty; });
-
-  var total = items.reduce(function(s,i){ return s + i.qty; }, 0);
-  document.getElementById('dailyModalTotal').textContent = total;
-
-  var color = catColors[cat] || '#fff';
+  var cats = ['CPU', 'iPad', 'Care'];
   var tbody = document.getElementById('dailyModalBody');
   tbody.innerHTML = '';
-  items.forEach(function(item) {
-    var tr = document.createElement('tr');
-    tr.style.borderBottom = '1px solid #1e293b';
-    var tdName = document.createElement('td');
-    tdName.style.cssText = 'padding:10px 20px;font-size:13px;color:#e2e8f0';
-    tdName.textContent = item.name;
-    var tdQty = document.createElement('td');
-    tdQty.style.cssText = 'padding:10px 20px;text-align:right;font-family:"DM Mono",monospace;font-size:14px;font-weight:700;color:' + color;
-    tdQty.textContent = item.qty;
-    tr.appendChild(tdName);
-    tr.appendChild(tdQty);
-    tbody.appendChild(tr);
+
+  var grandTotal = 0;
+  cats.forEach(function(cat) {
+    var catRows = rows.filter(function(r){ return r.c1 === cat; });
+    if (!catRows.length) return;
+
+    /* Section header */
+    var trHead = document.createElement('tr');
+    trHead.style.cssText = 'background:rgba(255,255,255,0.04)';
+    var thLabel = document.createElement('td');
+    thLabel.colSpan = 2;
+    thLabel.style.cssText = 'padding:6px 20px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:' + (catColors[cat] || '#fff');
+    thLabel.textContent = cat;
+    trHead.appendChild(thLabel);
+    tbody.appendChild(trHead);
+
+    /* Aggregate by c3 */
+    var agg = {};
+    catRows.forEach(function(r) {
+      var key = r.c3 || r.shortName || r.c2 || '—';
+      agg[key] = (agg[key] || 0) + r.qty;
+    });
+    var items = Object.keys(agg).map(function(k){ return { name: k, qty: agg[k] }; });
+    items.sort(function(a,b){ return b.qty - a.qty; });
+
+    items.forEach(function(item) {
+      grandTotal += item.qty;
+      var tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid #1e293b';
+      var tdName = document.createElement('td');
+      tdName.style.cssText = 'padding:8px 20px 8px 28px;font-size:13px;color:#e2e8f0';
+      tdName.textContent = item.name;
+      var tdQty = document.createElement('td');
+      tdQty.style.cssText = 'padding:8px 20px;text-align:right;font-family:"DM Mono",monospace;font-size:14px;font-weight:700;color:' + catColors[cat];
+      tdQty.textContent = item.qty;
+      tr.appendChild(tdName);
+      tr.appendChild(tdQty);
+      tbody.appendChild(tr);
+    });
   });
 
+  document.getElementById('dailyModalTotal').textContent = grandTotal;
   document.getElementById('dailyModal').style.display = 'block';
 }
 
@@ -2786,18 +2797,16 @@ function closeDailyModal(event) {
 
 /* ══ Daily table click delegation ══ */
 document.addEventListener('click', function(e) {
-  var td = e.target.closest('td[data-cat]');
-  if (!td) return;
-  var date = td.dataset.date;
-  var cat  = td.dataset.cat;
-  if (!date || !cat) return;
-  /* Find rows from current context */
+  var tr = e.target.closest('tr[data-date]');
+  if (!tr) return;
+  var date = tr.dataset.date;
+  if (!date) return;
   var sourceRows = (typeof histAllRows !== 'undefined' && histAllRows && histAllRows.length)
     ? histAllRows
     : (typeof allRows !== 'undefined' ? allRows : []);
-  var filtered = sourceRows.filter(function(r){ return r.date === date && r.c1 === cat; });
-  if (!filtered.length) return;
-  showDailyModal(e, date, cat, filtered);
+  var dayRows = sourceRows.filter(function(r){ return r.date === date; });
+  if (!dayRows.length) return;
+  showDailyModal(e, date, dayRows);
 });
 
 </script>
