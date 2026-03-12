@@ -2745,43 +2745,108 @@ function showDailyModal(event, date, rows) {
   tbody.innerHTML = '';
 
   var grandTotal = 0;
+
   cats.forEach(function(cat) {
     var catRows = rows.filter(function(r){ return r.c1 === cat; });
     if (!catRows.length) return;
+    var color = catColors[cat] || '#fff';
+    var catTotal = catRows.reduce(function(s,r){ return s+r.qty; }, 0);
+    grandTotal += catTotal;
 
-    /* Section header */
-    var trHead = document.createElement('tr');
-    trHead.style.cssText = 'background:rgba(255,255,255,0.04)';
-    var thLabel = document.createElement('td');
-    thLabel.colSpan = 2;
-    thLabel.style.cssText = 'padding:6px 20px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:' + (catColors[cat] || '#fff');
-    thLabel.textContent = cat;
-    trHead.appendChild(thLabel);
-    tbody.appendChild(trHead);
+    /* ── 大分類 header ── */
+    var trCat = document.createElement('tr');
+    trCat.style.cssText = 'background:rgba(255,255,255,0.06);border-top:1px solid #334155';
+    var tdCat = document.createElement('td');
+    tdCat.colSpan = 2;
+    tdCat.style.cssText = 'padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:'+color;
+    tdCat.textContent = cat;
+    trCat.appendChild(tdCat);
+    tbody.appendChild(trCat);
 
-    /* Aggregate by c3 */
-    var agg = {};
-    catRows.forEach(function(r) {
-      var key = r.c3 || r.shortName || r.c2 || '—';
-      agg[key] = (agg[key] || 0) + r.qty;
+    /* ── 中分類 grouping ── */
+    var c2Map = {};
+    catRows.forEach(function(r){
+      var c2 = r.c2 || '—';
+      if (!c2Map[c2]) c2Map[c2] = [];
+      c2Map[c2].push(r);
     });
-    var items = Object.keys(agg).map(function(k){ return { name: k, qty: agg[k] }; });
-    items.sort(function(a,b){ return b.qty - a.qty; });
 
-    items.forEach(function(item) {
-      grandTotal += item.qty;
-      var tr = document.createElement('tr');
-      tr.style.borderBottom = '1px solid #1e293b';
-      var tdName = document.createElement('td');
-      tdName.style.cssText = 'padding:8px 20px 8px 28px;font-size:13px;color:#e2e8f0';
-      tdName.textContent = item.name;
-      var tdQty = document.createElement('td');
-      tdQty.style.cssText = 'padding:8px 20px;text-align:right;font-family:"DM Mono",monospace;font-size:14px;font-weight:700;color:' + catColors[cat];
-      tdQty.textContent = item.qty;
-      tr.appendChild(tdName);
-      tr.appendChild(tdQty);
-      tbody.appendChild(tr);
+    Object.keys(c2Map).sort().forEach(function(c2) {
+      var c2Rows = c2Map[c2];
+      var c2Total = c2Rows.reduce(function(s,r){ return s+r.qty; }, 0);
+
+      /* 中分類 row */
+      var trC2 = document.createElement('tr');
+      trC2.style.cssText = 'background:rgba(255,255,255,0.02);border-top:1px solid #1e293b';
+      var tdC2 = document.createElement('td');
+      tdC2.colSpan = 2;
+      tdC2.style.cssText = 'padding:6px 16px 6px 24px;font-size:12px;color:#94a3b8;font-weight:600';
+      tdC2.textContent = c2 + '  (' + c2Total + ')';
+      trC2.appendChild(tdC2);
+      tbody.appendChild(trC2);
+
+      /* ── 小分類 grouping ── */
+      var c3Map = {};
+      c2Rows.forEach(function(r){
+        var c3 = r.c3 || '—';
+        if (!c3Map[c3]) c3Map[c3] = [];
+        c3Map[c3].push(r);
+      });
+
+      Object.keys(c3Map).sort().forEach(function(c3) {
+        var c3Rows = c3Map[c3];
+        var c3Total = c3Rows.reduce(function(s,r){ return s+r.qty; }, 0);
+
+        /* 小分類 row */
+        var trC3 = document.createElement('tr');
+        trC3.style.cssText = 'border-top:1px solid #1a2235';
+        var tdC3Name = document.createElement('td');
+        tdC3Name.style.cssText = 'padding:6px 8px 6px 36px;font-size:13px;color:#cbd5e1';
+        tdC3Name.textContent = c3;
+        var tdC3Qty = document.createElement('td');
+        tdC3Qty.style.cssText = 'padding:6px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:13px;font-weight:600;color:'+color;
+        tdC3Qty.textContent = c3Total;
+        trC3.appendChild(tdC3Name);
+        trC3.appendChild(tdC3Qty);
+        tbody.appendChild(trC3);
+
+        /* ── Short Name rows（若與 c3 相同則省略）── */
+        var snMap = {};
+        c3Rows.forEach(function(r){
+          var sn = r.shortName || '';
+          if (!snMap[sn]) snMap[sn] = 0;
+          snMap[sn] += r.qty;
+        });
+        var snKeys = Object.keys(snMap).filter(function(sn){ return sn && sn !== c3; });
+        snKeys.sort();
+        snKeys.forEach(function(sn) {
+          var trSN = document.createElement('tr');
+          trSN.style.cssText = 'border-top:1px solid #111827';
+          var tdSNName = document.createElement('td');
+          tdSNName.style.cssText = 'padding:4px 8px 4px 48px;font-size:11px;color:#64748b;font-family:"DM Mono",monospace';
+          tdSNName.textContent = sn;
+          var tdSNQty = document.createElement('td');
+          tdSNQty.style.cssText = 'padding:4px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:11px;color:#64748b';
+          tdSNQty.textContent = snMap[sn];
+          trSN.appendChild(tdSNName);
+          trSN.appendChild(tdSNQty);
+          tbody.appendChild(trSN);
+        });
+      });
     });
+
+    /* ── 大分類 總計 row ── */
+    var trTotal = document.createElement('tr');
+    trTotal.style.cssText = 'border-top:2px solid #334155;background:rgba(255,255,255,0.03)';
+    var tdTotalLabel = document.createElement('td');
+    tdTotalLabel.style.cssText = 'padding:8px 16px 8px 24px;font-size:12px;color:'+color+';font-weight:700';
+    tdTotalLabel.textContent = cat + ' 合計';
+    var tdTotalQty = document.createElement('td');
+    tdTotalQty.style.cssText = 'padding:8px 16px;text-align:right;font-family:"DM Mono",monospace;font-size:15px;font-weight:700;color:'+color;
+    tdTotalQty.textContent = catTotal;
+    trTotal.appendChild(tdTotalLabel);
+    trTotal.appendChild(tdTotalQty);
+    tbody.appendChild(trTotal);
   });
 
   document.getElementById('dailyModalTotal').textContent = grandTotal;
