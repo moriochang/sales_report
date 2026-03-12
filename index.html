@@ -1715,9 +1715,10 @@ function renderExport() {
         + '<td style="' + dateStyle + '">' + dateLabel(d) + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.q + '</td>'
         + '<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">' + qw.w + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(cpu>0?'pointer':'default')+';' + (cpu  > 0 ? 'color:var(--cpu)'  : 'color:#94a3b8') + '" '+(cpu>0?'onclick="showDailyModal(event,\''+d+'\',\'CPU\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'CPU\';})) + ')"':'')+'>' + cpu  + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(ipad>0?'pointer':'default')+';' + (ipad > 0 ? 'color:var(--ipad)' : 'color:#94a3b8') + '" '+(ipad>0?'onclick="showDailyModal(event,\''+d+'\',\'iPad\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'iPad\';})) + ')"':'')+'>' + ipad + '</td>'
-        + '<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(care>0?'pointer':'default')+';' + (care > 0 ? 'color:var(--care)' : 'color:#94a3b8') + '" '+(care>0?'onclick="showDailyModal(event,\''+d+'\',\'Care\',' + JSON.stringify(dayRows.filter(function(r){return r.c1===\'Care\';})) + ')"':'')+'>' + care + '</td>'
+        + (function(){ var v=cpu; var cl=cpu>0?'var(--cpu)':'#94a3b8'; var td='<td class="qty" data-date="'+d+'" data-cat="CPU" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; return td; })()
+        + (function(){ var v=ipad; var cl=ipad>0?'var(--ipad)':'#94a3b8'; return '<td class="qty" data-date="'+d+'" data-cat="iPad" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; })()
+        + (function(){ var v=care; var cl=care>0?'var(--care)':'#94a3b8'; return '<td class="qty" data-date="'+d+'" data-cat="Care" style="text-align:right;padding-right:20px;font-size:14px;color:'+cl+';'+(v>0?'cursor:pointer':'')+'">'+v+'</td>'; })()
+        + '</td>'
         + '</tr>';
     }).join('')
     + '<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2681,9 +2682,9 @@ function hRenderExport(base) {
       +'<td style="font-family:\'DM Mono\',monospace;font-size:12px;'+dStyle+'">'+d+' ('+WD[wd]+')'+(TW_HOL[d]?' · '+TW_HOL[d]:'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[0]||'')+'</td>'
       +'<td style="font-family:\'DM Mono\',monospace;font-size:13px;color:#cbd5e1">'+(qwP[1]||'')+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(cpu>0?'pointer':'default')+';'+(cpu>0?'color:var(--cpu)':'color:#94a3b8')+'""+(cpu>0?' onclick="showDailyModal(event,\''+d+'\',\'CPU\','+JSON.stringify(dr.filter(function(r){return r.c1===\'CPU\';}))+')""':'')+'>'+(cpu)+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(ipad>0?'pointer':'default')+';'+(ipad>0?'color:var(--ipad)':'color:#94a3b8')+'""+(ipad>0?' onclick="showDailyModal(event,\''+d+'\',\'iPad\','+JSON.stringify(dr.filter(function(r){return r.c1===\'iPad\';}))+')""':'')+'>'+(ipad)+'</td>'
-      +'<td class="qty" style="text-align:right;padding-right:20px;font-size:14px;cursor:'+(care>0?'pointer':'default')+';'+(care>0?'color:var(--care)':'color:#94a3b8')+'""+(care>0?' onclick="showDailyModal(event,\''+d+'\',\'Care\','+JSON.stringify(dr.filter(function(r){return r.c1===\'Care\';}))+')""':'')+'>'+(care)+'</td>'
+      +'<td class="qty" data-date="'+d+'" data-cat="CPU" style="text-align:right;padding-right:20px;font-size:14px;'+(cpu>0?'color:var(--cpu);cursor:pointer':'color:#94a3b8')+'">'+cpu+'</td>'
+      +'<td class="qty" data-date="'+d+'" data-cat="iPad" style="text-align:right;padding-right:20px;font-size:14px;'+(ipad>0?'color:var(--ipad);cursor:pointer':'color:#94a3b8')+'">'+ipad+'</td>'
+      +'<td class="qty" data-date="'+d+'" data-cat="Care" style="text-align:right;padding-right:20px;font-size:14px;'+(care>0?'color:var(--care);cursor:pointer':'color:#94a3b8')+'">'+care+'</td>'
       +'</tr>';
   }).join('')
   +'<tr style="border-top:2px solid var(--border);font-weight:700">'
@@ -2739,8 +2740,8 @@ function showDailyModal(event, date, cat, rows) {
 
   var catEl = document.getElementById('dailyModalCat');
   catEl.textContent = cat;
-  var catColors = { 'CPU': '#34d399', 'iPad': '#60a5fa', 'Care': '#a78bfa' };
-  var catBg     = { 'CPU': 'rgba(52,211,153,0.15)', 'iPad': 'rgba(96,165,250,0.15)', 'Care': 'rgba(167,139,250,0.15)' };
+  var catColors = { CPU: '#34d399', iPad: '#60a5fa', Care: '#a78bfa' };
+  var catBg     = { CPU: 'rgba(52,211,153,0.15)', iPad: 'rgba(96,165,250,0.15)', Care: 'rgba(167,139,250,0.15)' };
   catEl.style.color = catColors[cat] || '#fff';
   catEl.style.background = catBg[cat] || 'rgba(255,255,255,0.1)';
 
@@ -2757,12 +2758,21 @@ function showDailyModal(event, date, cat, rows) {
   document.getElementById('dailyModalTotal').textContent = total;
 
   var color = catColors[cat] || '#fff';
-  document.getElementById('dailyModalBody').innerHTML = items.map(function(item) {
-    return '<tr style="border-bottom:1px solid #1e293b">'
-      + '<td style="padding:10px 20px;font-size:13px;color:#e2e8f0">' + item.name + '</td>'
-      + '<td style="padding:10px 20px;text-align:right;font-family:\'DM Mono\',monospace;font-size:14px;font-weight:700;color:' + color + '">' + item.qty + '</td>'
-      + '</tr>';
-  }).join('');
+  var tbody = document.getElementById('dailyModalBody');
+  tbody.innerHTML = '';
+  items.forEach(function(item) {
+    var tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #1e293b';
+    var tdName = document.createElement('td');
+    tdName.style.cssText = 'padding:10px 20px;font-size:13px;color:#e2e8f0';
+    tdName.textContent = item.name;
+    var tdQty = document.createElement('td');
+    tdQty.style.cssText = 'padding:10px 20px;text-align:right;font-family:"DM Mono",monospace;font-size:14px;font-weight:700;color:' + color;
+    tdQty.textContent = item.qty;
+    tr.appendChild(tdName);
+    tr.appendChild(tdQty);
+    tbody.appendChild(tr);
+  });
 
   document.getElementById('dailyModal').style.display = 'block';
 }
@@ -2772,6 +2782,23 @@ function closeDailyModal(event) {
     document.getElementById('dailyModal').style.display = 'none';
   }
 }
+
+
+/* ══ Daily table click delegation ══ */
+document.addEventListener('click', function(e) {
+  var td = e.target.closest('td[data-cat]');
+  if (!td) return;
+  var date = td.dataset.date;
+  var cat  = td.dataset.cat;
+  if (!date || !cat) return;
+  /* Find rows from current context */
+  var sourceRows = (typeof histAllRows !== 'undefined' && histAllRows && histAllRows.length)
+    ? histAllRows
+    : (typeof allRows !== 'undefined' ? allRows : []);
+  var filtered = sourceRows.filter(function(r){ return r.date === date && r.c1 === cat; });
+  if (!filtered.length) return;
+  showDailyModal(e, date, cat, filtered);
+});
 
 </script>
 </body>
