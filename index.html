@@ -2733,7 +2733,6 @@ function showDailyModal(event, date, rows) {
   var cats = ['CPU', 'iPad', 'Care'];
   var grandTotal = 0;
 
-  /* Build a column div per category */
   var container = document.getElementById('dailyModalBody');
   container.innerHTML = '';
   container.style.cssText = 'display:flex;gap:0;align-items:flex-start;overflow:auto';
@@ -2745,25 +2744,22 @@ function showDailyModal(event, date, rows) {
     grandTotal += catTotal;
 
     var col = document.createElement('div');
-    col.style.cssText = 'flex:1;min-width:0;border-right:'+(ci<2?'1px solid #334155':'none');
+    col.style.cssText = 'flex:1;min-width:0;' + (ci < 2 ? 'border-right:1px solid #334155' : '');
 
-    /* ── Cat header ── */
+    /* ── 大分類 header ── */
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'padding:10px 14px 8px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:'+color+';border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:baseline';
+    hdr.style.cssText = 'padding:10px 14px 9px;border-bottom:2px solid '+color+';display:flex;justify-content:space-between;align-items:baseline;background:rgba(255,255,255,0.03)';
     var hdrLabel = document.createElement('span');
+    hdrLabel.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:0.06em;color:'+color;
     hdrLabel.textContent = cat;
     var hdrTotal = document.createElement('span');
-    hdrTotal.style.cssText = 'font-family:"DM Mono",monospace;font-size:16px;font-weight:700;color:'+color;
-    hdrTotal.textContent = catTotal;
+    hdrTotal.style.cssText = 'font-family:"DM Mono",monospace;font-size:18px;font-weight:700;color:'+color;
+    hdrTotal.textContent = catTotal || '—';
     hdr.appendChild(hdrLabel);
     hdr.appendChild(hdrTotal);
     col.appendChild(hdr);
 
     if (!catRows.length) {
-      var empty = document.createElement('div');
-      empty.style.cssText = 'padding:12px 14px;font-size:12px;color:#475569';
-      empty.textContent = '—';
-      col.appendChild(empty);
       container.appendChild(col);
       return;
     }
@@ -2780,13 +2776,14 @@ function showDailyModal(event, date, rows) {
       var c2Rows = c2Map[c2];
       var c2Total = c2Rows.reduce(function(s,r){ return s+r.qty; }, 0);
 
-      /* 中分類 label */
+      /* 中分類 row — 明顯，數量有顏色 */
       var c2Div = document.createElement('div');
-      c2Div.style.cssText = 'padding:7px 14px 4px;font-size:11px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.02);border-bottom:1px solid #1e293b;display:flex;justify-content:space-between';
+      c2Div.style.cssText = 'padding:8px 14px 6px;background:rgba(255,255,255,0.04);border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;margin-top:2px';
       var c2Label = document.createElement('span');
+      c2Label.style.cssText = 'font-size:12px;font-weight:700;color:#e2e8f0';
       c2Label.textContent = c2;
       var c2Qty = document.createElement('span');
-      c2Qty.style.cssText = 'font-family:"DM Mono",monospace;color:#64748b';
+      c2Qty.style.cssText = 'font-family:"DM Mono",monospace;font-size:13px;font-weight:700;color:'+color+';flex-shrink:0;margin-left:8px';
       c2Qty.textContent = c2Total;
       c2Div.appendChild(c2Label);
       c2Div.appendChild(c2Qty);
@@ -2804,19 +2801,20 @@ function showDailyModal(event, date, rows) {
         var c3Rows = c3Map[c3];
         var c3Total = c3Rows.reduce(function(s,r){ return s+r.qty; }, 0);
 
-        /* 小分類 row */
+        /* 小分類 row — 淡色 */
         var c3Div = document.createElement('div');
-        c3Div.style.cssText = 'padding:5px 14px 5px 20px;font-size:12px;color:#cbd5e1;border-bottom:1px solid #111827;display:flex;justify-content:space-between;align-items:center';
+        c3Div.style.cssText = 'padding:5px 14px 5px 22px;border-bottom:1px solid #1a2235;display:flex;justify-content:space-between;align-items:center';
         var c3Name = document.createElement('span');
+        c3Name.style.cssText = 'font-size:12px;color:#64748b';
         c3Name.textContent = c3;
         var c3Qty = document.createElement('span');
-        c3Qty.style.cssText = 'font-family:"DM Mono",monospace;font-size:13px;font-weight:600;color:'+color+';margin-left:8px;flex-shrink:0';
+        c3Qty.style.cssText = 'font-family:"DM Mono",monospace;font-size:12px;font-weight:500;color:#64748b;margin-left:8px;flex-shrink:0';
         c3Qty.textContent = c3Total;
         c3Div.appendChild(c3Name);
         c3Div.appendChild(c3Qty);
         col.appendChild(c3Div);
 
-        /* ── Short Name rows ── */
+        /* ── Short Name rows — 更淡 ── */
         var snMap = {};
         c3Rows.forEach(function(r){
           var sn = r.shortName || '';
@@ -2827,11 +2825,12 @@ function showDailyModal(event, date, rows) {
         snKeys.sort();
         snKeys.forEach(function(sn) {
           var snDiv = document.createElement('div');
-          snDiv.style.cssText = 'padding:3px 14px 3px 28px;font-size:10px;color:#475569;border-bottom:1px solid #0f172a;display:flex;justify-content:space-between;font-family:"DM Mono",monospace';
+          snDiv.style.cssText = 'padding:3px 14px 3px 30px;border-bottom:1px solid #0f172a;display:flex;justify-content:space-between';
           var snName = document.createElement('span');
+          snName.style.cssText = 'font-size:10px;color:#334155;font-family:"DM Mono",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
           snName.textContent = sn;
           var snQty = document.createElement('span');
-          snQty.style.cssText = 'flex-shrink:0;margin-left:6px';
+          snQty.style.cssText = 'font-family:"DM Mono",monospace;font-size:10px;color:#334155;flex-shrink:0;margin-left:6px';
           snQty.textContent = snMap[sn];
           snDiv.appendChild(snName);
           snDiv.appendChild(snQty);
