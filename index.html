@@ -2480,26 +2480,40 @@ function hRenderWeekly(base) {
   hRenderWeekly._base        = base;
 
   /* ── thead ── */
-  var thRow = '<tr><th style="color:var(--muted);font-size:11px;text-align:left;width:52px;padding:6px 10px;border-right:1px solid var(--border)"></th>';
-  weeks.forEach(function(w) {
-    var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
-    var date = wd
-      ? '<div style="font-size:8px;color:var(--muted);font-weight:400;margin-top:1px;white-space:nowrap">'
-        + wd.start.slice(4,6)+'/'+wd.start.slice(6,8)
-        + '–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8)+'</div>'
-      : '';
-    /* 未來週次文字變淡 */
-    var wColor = (weekData[w] && weekData[w].hasData) ? '#fff' : 'var(--muted)';
-    var clickable = (weekData[w] && weekData[w].hasData);
-  thRow += '<th style="color:'+wColor+';text-align:center;width:7%;padding:6px 4px;font-size:13px;border-left:1px solid var(--border);'+(clickable?'cursor:pointer;':'')+'"'
-    +(clickable?' onclick="showWeeklyModal(''+w+'')"':'')
-    +' onmouseenter="if(this.dataset.clickable)this.style.background='rgba(255,255,255,0.06)'"'
-    +' onmouseleave="this.style.background=''"'
-    +' data-clickable="'+(clickable?'1':'')+'"'
-    +'>'+w+date+'</th>';
-  });
-  thRow += '</tr>';
-  if (thead) thead.innerHTML = thRow;
+  /* Build thead using DOM to avoid escape issues */
+  if (thead) {
+    thead.innerHTML = '';
+    var theadTr = document.createElement('tr');
+
+    /* Label th */
+    var labelTh = document.createElement('th');
+    labelTh.style.cssText = 'color:var(--muted);font-size:11px;text-align:left;width:52px;padding:6px 10px;border-right:1px solid var(--border)';
+    theadTr.appendChild(labelTh);
+
+    weeks.forEach(function(w) {
+      var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
+      var hasData = weekData[w] && weekData[w].hasData;
+      var th = document.createElement('th');
+      th.style.cssText = 'text-align:center;width:7%;padding:6px 4px;font-size:13px;border-left:1px solid var(--border);color:'+(hasData?'#fff':'var(--muted)')+(hasData?';cursor:pointer':'');
+      /* Week label */
+      var wLabel = document.createTextNode(w);
+      th.appendChild(wLabel);
+      /* Date subtitle */
+      if (wd) {
+        var dateDiv = document.createElement('div');
+        dateDiv.style.cssText = 'font-size:8px;color:var(--muted);font-weight:400;margin-top:1px;white-space:nowrap';
+        dateDiv.textContent = wd.start.slice(4,6)+'/'+wd.start.slice(6,8)+'–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8);
+        th.appendChild(dateDiv);
+      }
+      if (hasData) {
+        th.addEventListener('mouseenter', function(){ this.style.background='rgba(255,255,255,0.06)'; });
+        th.addEventListener('mouseleave', function(){ this.style.background=''; });
+        (function(week){ th.addEventListener('click', function(){ showWeeklyModal(week); }); })(w);
+      }
+      theadTr.appendChild(th);
+    });
+    thead.appendChild(theadTr);
+  }
 
   /* ── data cell ── */
   function dataCell(val, prev, color, hasData, prevHasData) {
