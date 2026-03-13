@@ -2493,8 +2493,9 @@ function hRenderWeekly(base) {
     weeks.forEach(function(w) {
       var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
       var hasData = weekData[w] && weekData[w].hasData;
+      var hasStarted = !!(weekData[w] && (weekData[w].cpu || weekData[w].ipad || weekData[w].care || (FY_WEEK_DATES[histSelFYQ]||{})[w] && (FY_WEEK_DATES[histSelFYQ]||{})[w].start <= todayStr));
       var th = document.createElement('th');
-      th.style.cssText = 'text-align:center;width:7%;padding:6px 4px;font-size:13px;border-left:1px solid var(--border);color:'+(hasData?'#fff':'var(--muted)')+(hasData?';cursor:pointer':'');
+      th.style.cssText = 'text-align:center;width:7%;padding:6px 4px;font-size:13px;border-left:1px solid var(--border);color:'+(hasData?'#fff':'var(--muted)')+';cursor:pointer';
       /* Week label */
       var wLabel = document.createTextNode(w);
       th.appendChild(wLabel);
@@ -2505,11 +2506,9 @@ function hRenderWeekly(base) {
         dateDiv.textContent = wd.start.slice(4,6)+'/'+wd.start.slice(6,8)+'–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8);
         th.appendChild(dateDiv);
       }
-      if (hasData) {
-        th.addEventListener('mouseenter', function(){ this.style.background='rgba(255,255,255,0.06)'; });
-        th.addEventListener('mouseleave', function(){ this.style.background=''; });
-        (function(week){ th.addEventListener('click', function(){ showWeeklyModal(week); }); })(w);
-      }
+      th.addEventListener('mouseenter', function(){ this.style.background='rgba(255,255,255,0.06)'; });
+      th.addEventListener('mouseleave', function(){ this.style.background=''; });
+      (function(week){ th.addEventListener('click', function(){ showWeeklyModal(week); }); })(w);
       theadTr.appendChild(th);
     });
     thead.appendChild(theadTr);
@@ -2896,19 +2895,21 @@ function showWeeklyModal(w) {
   var weekData = hRenderWeekly._weekData || {};
   var fyq      = hRenderWeekly._fyq || '';
   var base     = hRenderWeekly._base || [];
-  var wd       = weekData[w];
-  if (!wd || !wd.hasData) return;
-
   var fwDates  = (FY_WEEK_DATES[fyq] || {})[w];
-  var dateRange = fwDates
-    ? fwDates.start.slice(4,6)+'/'+fwDates.start.slice(6,8)+' – '+fwDates.end.slice(4,6)+'/'+fwDates.end.slice(6,8)
-    : '';
+  if (!fwDates) return;
 
-  var wRows = fwDates
-    ? base.filter(function(r){ return r.date >= fwDates.start && r.date <= fwDates.end; })
-    : [];
+  /* Filter rows: from week start to MIN(week end, today) */
+  var todayStr = (function(){
+    var d = new Date();
+    return ''+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  })();
+  var effectiveEnd = fwDates.end < todayStr ? fwDates.end : todayStr;
+  var wRows = base.filter(function(r){ return r.date >= fwDates.start && r.date <= effectiveEnd; });
 
-  /* Reuse dailyModal elements */
+  var isPartial = fwDates.end > todayStr; /* 本週尚未結束 */
+  var dateRange = fwDates.start.slice(4,6)+'/'+fwDates.start.slice(6,8)
+    + ' – ' + (isPartial ? todayStr.slice(4,6)+'/'+todayStr.slice(6,8)+' (迄今)' : fwDates.end.slice(4,6)+'/'+fwDates.end.slice(6,8));
+
   document.getElementById('dailyModalDate').textContent = fyq + ' ' + w + '　' + dateRange;
   document.getElementById('dailyModalCat').textContent = '';
 
@@ -2991,29 +2992,6 @@ function showWeeklyModal(w) {
         c3Div.appendChild(c3Name);
         c3Div.appendChild(c3Qty);
         col.appendChild(c3Div);
-
-        /* Short Name rows */
-        var snMap = {};
-        c3Rows.forEach(function(r){
-          var sn = r.shortName || '';
-          if (!snMap[sn]) snMap[sn] = 0;
-          snMap[sn] += r.qty;
-        });
-        var snKeys = Object.keys(snMap).filter(function(sn){ return sn && sn !== c3; });
-        snKeys.sort();
-        snKeys.forEach(function(sn) {
-          var snDiv = document.createElement('div');
-          snDiv.style.cssText = 'padding:3px 14px 3px 30px;border-bottom:1px solid #0f172a;display:flex;justify-content:space-between';
-          var snName = document.createElement('span');
-          snName.style.cssText = 'font-size:10px;color:#64748b;font-family:"DM Mono",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-          snName.textContent = sn;
-          var snQty = document.createElement('span');
-          snQty.style.cssText = 'font-family:"DM Mono",monospace;font-size:10px;color:#64748b;flex-shrink:0;margin-left:6px';
-          snQty.textContent = snMap[sn];
-          snDiv.appendChild(snName);
-          snDiv.appendChild(snQty);
-          col.appendChild(snDiv);
-        });
       });
     });
 
