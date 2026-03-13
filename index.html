@@ -2519,20 +2519,20 @@ function hRenderWeekly(base) {
     var badge = '';
     /* W1 或前一週無資料：顯示 — */
     if (prev === null || !prevHasData) {
-      badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">—</span>';
+      badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">—</span>';
     } else {
       var diff = val - prev;
       if (diff === 0) {
-        badge = '<span style="display:block;font-size:10px;color:var(--muted);margin-top:2px">±0</span>';
+        badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">±0</span>';
       } else {
         var dc = diff > 0 ? '#16a34a' : '#ef4444';
-        badge = '<span style="display:block;font-size:10px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':'▼')+Math.abs(diff)+'</span>';
+        badge = '<span style="display:block;font-size:9px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':'▼')+Math.abs(diff)+'</span>';
       }
     }
     /* 未來週次數字變淡 */
     var valColor = hasData ? color : 'var(--muted)';
     return '<td style="text-align:center;padding:10px 4px;border-left:1px solid var(--border)">'
-      + '<span style="color:'+valColor+';font-weight:700;font-size:13px">'+val+'</span>'
+      + '<span style="color:'+valColor+';font-weight:700;font-size:14px">'+val+'</span>'
       + badge
       + '</td>';
   }
