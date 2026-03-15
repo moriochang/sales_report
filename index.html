@@ -1945,13 +1945,33 @@ function fmtDate(d) {
 function buildFYPicker() {
   var qEl = document.getElementById('fyQChips');
   if (!qEl) return;
-  /* Only show FY26 onwards */
-  var qs = Object.keys(FY_WEEK_DATES).sort();
-  qEl.innerHTML = qs.map(function(q) {
+
+  /* Compute quarters that appear in loaded data */
+  var srcRows = (histAllRows && histAllRows.length) ? histAllRows
+    : (allRows && allRows.length) ? allRows : [];
+
+  var seenQ = {}, availQ = [];
+  srcRows.forEach(function(r) {
+    if (!r.date || r.date === '—') return;
+    var qw = QW_MAP[r.date];
+    if (!qw) return;
+    var q = qw.split(' ')[0];
+    if (!seenQ[q]) { seenQ[q] = true; availQ.push(q); }
+  });
+  availQ.sort();
+
+  if (!availQ.length) {
+    qEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">請先載入資料</div>';
+    return;
+  }
+
+  qEl.innerHTML = availQ.map(function(q) {
     return '<div class="fy-q-chip" data-q="' + q + '" onclick="pickFYQ(this)">' + q + '</div>';
   }).join('');
-  /* Default select first quarter */
-  if (qs.length) pickFYQ(qEl.querySelector('[data-q="' + qs[0] + '"]'));
+
+  /* Default: select last (most recent) quarter */
+  var chips = qEl.querySelectorAll('.fy-q-chip');
+  if (chips.length) pickFYQ(chips[chips.length - 1]);
 }
 
 function pickFYQ(el) {
@@ -1995,6 +2015,8 @@ function switchHistMode(mode) {
   if (tabAll) tabAll.classList.toggle('on', mode === 'all');
   document.getElementById('monthPicker').style.display = mode === 'month' ? 'block' : 'none';
   document.getElementById('fyPicker').style.display    = mode === 'fy'    ? 'block' : 'none';
+  /* Rebuild FY picker based on actual loaded data each time */
+  if (mode === 'fy') buildFYPicker();
   /* Restore month chip visual state when switching back to month mode */
   if (mode === 'month' && histSelMonth) {
     document.querySelectorAll('.month-chip').forEach(function(c) {
@@ -2100,6 +2122,8 @@ function loadHistoryFromLoaded() {
   });
   histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
   hRebuildAllRows();
+  /* Rebuild FY quarter chips based on actual loaded data */
+  buildFYPicker();
   hBuildStoreChips();
   hBuildChips();
   document.getElementById('histResults').style.display = 'block';
