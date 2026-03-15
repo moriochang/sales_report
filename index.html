@@ -1946,32 +1946,50 @@ function buildFYPicker() {
   var qEl = document.getElementById('fyQChips');
   if (!qEl) return;
 
-  /* Compute quarters that appear in loaded data */
+  /* Step 1: derive quarters from loaded data (if any) */
   var srcRows = (histAllRows && histAllRows.length) ? histAllRows
     : (allRows && allRows.length) ? allRows : [];
 
-  var seenQ = {}, availQ = [];
+  var seenQ = {}, dataQ = [];
   srcRows.forEach(function(r) {
     if (!r.date || r.date === '—') return;
     var qw = QW_MAP[r.date];
     if (!qw) return;
     var q = qw.split(' ')[0];
-    if (!seenQ[q]) { seenQ[q] = true; availQ.push(q); }
+    if (!seenQ[q]) { seenQ[q] = true; dataQ.push(q); }
   });
-  availQ.sort();
+  dataQ.sort();
 
-  if (!availQ.length) {
-    qEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">請先載入資料</div>';
-    return;
-  }
+  /* Step 2: build display list — from FY26Q1 up to current quarter */
+  var todayStr = (function(){
+    var d = new Date();
+    return ''+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  })();
+  var curQ = (QW_MAP[todayStr] || '').split(' ')[0] || 'FY26Q2';
 
-  qEl.innerHTML = availQ.map(function(q) {
-    return '<div class="fy-q-chip" data-q="' + q + '" onclick="pickFYQ(this)">' + q + '</div>';
+  var allQ = [];
+  var seenAll = {};
+  QW_PAIRS.forEach(function(p){
+    var q = p[1].split(' ')[0];
+    if (!seenAll[q]) { seenAll[q] = true; allQ.push(q); }
+  });
+  allQ.sort();
+
+  /* Show FY26Q1 onwards up to current quarter */
+  var startQ = 'FY26Q1';
+  var displayQ = allQ.filter(function(q){ return q >= startQ && q <= curQ; });
+
+  if (!displayQ.length) displayQ = [curQ];
+
+  qEl.innerHTML = displayQ.map(function(q) {
+    var hasData = seenQ[q] ? ' style="border-color:var(--accent)"' : '';
+    return '<div class="fy-q-chip" data-q="' + q + '" onclick="pickFYQ(this)"' + hasData + '>' + q + '</div>';
   }).join('');
 
-  /* Default: select last (most recent) quarter */
-  var chips = qEl.querySelectorAll('.fy-q-chip');
-  if (chips.length) pickFYQ(chips[chips.length - 1]);
+  /* Default: if data loaded pick last data quarter, else pick current quarter */
+  var defaultQ = dataQ.length ? dataQ[dataQ.length - 1] : curQ;
+  var target = qEl.querySelector('[data-q="' + defaultQ + '"]') || qEl.querySelector('.fy-q-chip:last-child');
+  if (target) pickFYQ(target);
 }
 
 function pickFYQ(el) {
