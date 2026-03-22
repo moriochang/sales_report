@@ -1261,7 +1261,7 @@ function gNum(row, idx) {
 /* ── Parse a single xlsx raw data → { name, rows } ── */
 function parseSingleFile(raw) {
   var rows = [];
-  var sName = (raw[1] && raw[1][5]) ? String(raw[1][5]).trim() : '';
+  var sName = (raw[1] && (raw[1][6] || raw[1][5])) ? String(raw[1][6] || raw[1][5]).trim() : '';
 
   var sec2Start = -1;
   for (var r = 0; r < raw.length; r++) {
@@ -1275,7 +1275,7 @@ function parseSingleFile(raw) {
   if (sec2Start === -1) return null;
 
   var sec2HeaderRow = raw[sec2Start] || [];
-  var qtyCol = 30;
+  var qtyCol = 22; /* default: store's own 銷售數量 col (col 23, 0-indexed 22) */
   for (var ci = 0; ci < sec2HeaderRow.length; ci++) {
     var cellVal = sec2HeaderRow[ci] ? String(sec2HeaderRow[ci]).trim() : '';
     if (cellVal === sName) {
