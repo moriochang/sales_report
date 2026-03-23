@@ -1297,7 +1297,7 @@ function parseSingleFile(raw) {
     var row = raw[i];
     if (!row) continue;
 
-    var maybeId = gStr(row, 0);
+    var maybeId = gStr(row, 1) || gStr(row, 0);
     if (maybeId && /^A\d+$/.test(maybeId)) curId = maybeId;
 
     var maybeDate = gStr(row, 6);
@@ -1316,7 +1316,7 @@ function parseSingleFile(raw) {
     if (!curId || !curC1 || !prodCode) continue;
     if (!c3) c3 = shortName || prodCode;
     if (CATS.indexOf(curC1) === -1)    continue;
-    if (qty === null)                  continue;
+    if (qty === null || qty === 0)     continue;
 
     rows.push({
       id:        curId,
