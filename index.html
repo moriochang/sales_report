@@ -761,7 +761,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
         </div>
         <div class="export-tbl-wrap">
           <table id="exp-cpu-ipad">
-            <thead><tr><th style="color:#fff;font-size:12px">員工編號</th><th style="color:#fff;font-size:12px">CPU</th><th style="color:#fff;font-size:12px">iPad</th></tr></thead>
+            <thead id="exp-ci-head"><tr><th style="color:#fff;font-size:12px">員工編號</th></tr></thead>
             <tbody id="exp-ci-body"></tbody>
           </table>
         </div>
@@ -945,11 +945,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
           <button class="export-btn" onclick="hExportCSV('cpu-ipad')">⬇ CSV</button>
         </div>
         <div class="export-tbl-wrap">
-          <table><thead><tr>
-            <th style="color:#fff;font-size:12px">員工編號</th>
-            <th style="color:#fff;font-size:12px">CPU</th>
-            <th style="color:#fff;font-size:12px">iPad</th>
-          </tr></thead><tbody id="hexp-ci-body"></tbody></table>
+          <table><thead id="hexp-ci-head"><tr><th style="color:#fff;font-size:12px">員工編號</th></tr></thead><tbody id="hexp-ci-body"></tbody></table>
         </div>
       </div>
       <div class="export-panel">
@@ -1530,17 +1526,52 @@ function renderExport() {
   /* If staff filter active, only show that staff */
   var staffList = curStaff ? [curStaff] : staffIds;
 
+  /* Collect CPU/iPad c2 categories in order */
+  var cpuC2s = [], ipadC2s = [];
+  base.filter(function(r){ return r.c1==='CPU'; }).forEach(function(r){
+    if (cpuC2s.indexOf(r.c2)===-1) cpuC2s.push(r.c2);
+  });
+  base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
+    if (ipadC2s.indexOf(r.c2)===-1) ipadC2s.push(r.c2);
+  });
+  cpuC2s.sort(); ipadC2s.sort();
+
+  /* Build dynamic header */
+  var ciHead = document.getElementById('exp-ci-head');
+  if (ciHead) {
+    var headHtml = '<tr><th style="color:#fff;font-size:12px;border-right:2px solid var(--border)">員工編號</th>';
+    if (cpuC2s.length) {
+      headHtml += '<th colspan="'+cpuC2s.length+'" style="color:var(--cpu);font-size:11px;text-align:center;border-right:1px solid var(--border)">CPU</th>';
+    }
+    if (ipadC2s.length) {
+      headHtml += '<th colspan="'+ipadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center">iPad</th>';
+    }
+    headHtml += '</tr><tr><th style="border-right:2px solid var(--border)"></th>';
+    cpuC2s.forEach(function(c2, i){
+      headHtml += '<th style="color:var(--cpu);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===cpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">' + c2 + '</th>';
+    });
+    ipadC2s.forEach(function(c2){
+      headHtml += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px">' + c2 + '</th>';
+    });
+    headHtml += '</tr>';
+    ciHead.innerHTML = headHtml;
+  }
+
   var ciBody = document.getElementById('exp-ci-body');
   ciBody.innerHTML = staffList.map(function(id) {
     var rows = base.filter(function(r){ return r.id === id; });
-    var cpu  = rows.filter(function(r){ return r.c1 === 'CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0);
-    var ipad = rows.filter(function(r){ return r.c1 === 'iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0);
-    var cpuCell  = cpu  ? '<td class="qty">'+cpu+'</td>'  : '<td class="qty" style="color:#94a3b8">0</td>';
-    var ipadCell = ipad ? '<td class="qty">'+ipad+'</td>' : '<td class="qty" style="color:#94a3b8">0</td>';
-    return '<tr>'
-      + '<td class="mono accent">' + id + '</td>'
-      + cpuCell + ipadCell
-      + '</tr>';
+    var cells = '';
+    cpuC2s.forEach(function(c2, i) {
+      var v = rows.filter(function(r){ return r.c1==='CPU' && r.c2===c2; }).reduce(function(s,r){ return s+r.qty; }, 0);
+      cells += v ? '<td class="qty" style="color:var(--cpu)'+(i===cpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+v+'</td>'
+                 : '<td class="qty" style="color:#94a3b8'+(i===cpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">0</td>';
+    });
+    ipadC2s.forEach(function(c2) {
+      var v = rows.filter(function(r){ return r.c1==='iPad' && r.c2===c2; }).reduce(function(s,r){ return s+r.qty; }, 0);
+      cells += v ? '<td class="qty" style="color:var(--ipad)">'+v+'</td>'
+                 : '<td class="qty" style="color:#94a3b8">0</td>';
+    });
+    return '<tr><td class="mono accent" style="border-right:2px solid var(--border)">' + id + '</td>' + cells + '</tr>';
   }).join('');
 
   /* --- Table 2: Care per staff x Short Name pivot --- */
@@ -2604,13 +2635,41 @@ function hRenderExport(base) {
   base.forEach(function(r){if(staffIds.indexOf(r.id)===-1)staffIds.push(r.id);});
   staffIds.sort();
   var staffList = histCurStaff ? [histCurStaff] : staffIds;
+  var hCpuC2s = [], hIpadC2s = [];
+  base.filter(function(r){ return r.c1==='CPU'; }).forEach(function(r){
+    if (hCpuC2s.indexOf(r.c2)===-1) hCpuC2s.push(r.c2);
+  });
+  base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
+    if (hIpadC2s.indexOf(r.c2)===-1) hIpadC2s.push(r.c2);
+  });
+  hCpuC2s.sort(); hIpadC2s.sort();
+
+  var hCiHead = document.getElementById('hexp-ci-head');
+  if (hCiHead) {
+    var hh = '<tr><th style="color:#fff;font-size:12px;border-right:2px solid var(--border)">員工編號</th>';
+    if (hCpuC2s.length) hh += '<th colspan="'+hCpuC2s.length+'" style="color:var(--cpu);font-size:11px;text-align:center;border-right:1px solid var(--border)">CPU</th>';
+    if (hIpadC2s.length) hh += '<th colspan="'+hIpadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center">iPad</th>';
+    hh += '</tr><tr><th style="border-right:2px solid var(--border)"></th>';
+    hCpuC2s.forEach(function(c2,i){ hh += '<th style="color:var(--cpu);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===hCpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+c2+'</th>'; });
+    hIpadC2s.forEach(function(c2){ hh += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px">'+c2+'</th>'; });
+    hh += '</tr>';
+    hCiHead.innerHTML = hh;
+  }
+
   document.getElementById('hexp-ci-body').innerHTML = staffList.map(function(id){
     var rr=base.filter(function(r){return r.id===id;});
-    var cpu=rr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0);
-    var ipad=rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
-    var cpuCell  = cpu  ? '<td class="qty">'+cpu+'</td>'  : '<td class="qty" style="color:#94a3b8">0</td>';
-    var ipadCell = ipad ? '<td class="qty">'+ipad+'</td>' : '<td class="qty" style="color:#94a3b8">0</td>';
-    return '<tr><td class="mono accent">'+id+'</td>'+cpuCell+ipadCell+'</tr>';
+    var cells = '';
+    hCpuC2s.forEach(function(c2,i){
+      var v=rr.filter(function(r){return r.c1==='CPU'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0);
+      cells += v ? '<td class="qty" style="color:var(--cpu)'+(i===hCpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+v+'</td>'
+                 : '<td class="qty" style="color:#94a3b8'+(i===hCpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">0</td>';
+    });
+    hIpadC2s.forEach(function(c2){
+      var v=rr.filter(function(r){return r.c1==='iPad'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0);
+      cells += v ? '<td class="qty" style="color:var(--ipad)">'+v+'</td>'
+                 : '<td class="qty" style="color:#94a3b8">0</td>';
+    });
+    return '<tr><td class="mono accent" style="border-right:2px solid var(--border)">'+id+'</td>'+cells+'</tr>';
   }).join('');
 
   /* Care pivot */
