@@ -752,14 +752,14 @@ tr:hover td { background: rgba(91,127,255,.04); }
     </div>
 
     <!-- Export section -->
-    <div class="export-section" id="exportSection">
+    <div id="exportSection" style="margin-top:32px;display:flex;flex-direction:column;gap:20px">
       <!-- Table 1: CPU + iPad per staff -->
       <div class="export-panel">
         <div class="export-panel-head">
           <span class="etitle">CPU / iPad 彙總</span>
           <button class="export-btn" onclick="exportCSV('cpu-ipad')">⬇ 匯出 CSV</button>
         </div>
-        <div class="export-tbl-wrap">
+        <div class="export-tbl-wrap" style="overflow-x:auto">
           <table id="exp-cpu-ipad">
             <thead id="exp-ci-head"><tr><th style="color:#fff;font-size:12px">員工編號</th></tr></thead>
             <tbody id="exp-ci-body"></tbody>
@@ -938,13 +938,13 @@ tr:hover td { background: rgba(91,127,255,.04); }
       </div>
     </div>
 
-    <div class="export-section" style="margin-top:32px">
+    <div style="margin-top:32px;display:flex;flex-direction:column;gap:20px">
       <div class="export-panel">
         <div class="export-panel-head">
           <span class="etitle">CPU / iPad 彙總</span>
           <button class="export-btn" onclick="hExportCSV('cpu-ipad')">⬇ CSV</button>
         </div>
-        <div class="export-tbl-wrap">
+        <div class="export-tbl-wrap" style="overflow-x:auto">
           <table><thead id="hexp-ci-head"><tr><th style="color:#fff;font-size:12px">員工編號</th></tr></thead><tbody id="hexp-ci-body"></tbody></table>
         </div>
       </div>
@@ -1765,12 +1765,27 @@ function exportCSV(type) {
   var staffList = curStaff ? [curStaff] : staffIds;
 
   if (type === 'cpu-ipad') {
-    rows.push(['員工編號','CPU','iPad']);
+    /* Collect all c2 categories */
+    var csvCpuC2s = [], csvIpadC2s = [];
+    base.filter(function(r){ return r.c1==='CPU'; }).forEach(function(r){
+      if (csvCpuC2s.indexOf(r.c2)===-1) csvCpuC2s.push(r.c2);
+    });
+    base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
+      if (csvIpadC2s.indexOf(r.c2)===-1) csvIpadC2s.push(r.c2);
+    });
+    csvCpuC2s.sort(); csvIpadC2s.sort();
+    rows.push(['員工編號'].concat(csvCpuC2s.map(function(c){ return 'CPU_'+c; }))
+                          .concat(csvIpadC2s.map(function(c){ return 'iPad_'+c; })));
     staffList.forEach(function(id) {
       var rr = base.filter(function(r){ return r.id === id; });
-      var cpu  = rr.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; },0);
-      var ipad = rr.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; },0);
-      rows.push([id, cpu, ipad]);
+      var cells = [id];
+      csvCpuC2s.forEach(function(c2){
+        cells.push(rr.filter(function(r){ return r.c1==='CPU'&&r.c2===c2; }).reduce(function(s,r){ return s+r.qty; },0));
+      });
+      csvIpadC2s.forEach(function(c2){
+        cells.push(rr.filter(function(r){ return r.c1==='iPad'&&r.c2===c2; }).reduce(function(s,r){ return s+r.qty; },0));
+      });
+      rows.push(cells);
     });
   } else if (type === 'daily') {
     rows.push(['日期','CPU','iPad','Care']);
@@ -2743,11 +2758,17 @@ function hExportCSV(type) {
   var staffIds=[]; base.forEach(function(r){if(staffIds.indexOf(r.id)===-1)staffIds.push(r.id);}); staffIds.sort();
   var staffList = histCurStaff ? [histCurStaff] : staffIds;
   if (type==='cpu-ipad') {
-    rows.push(['員工編號','CPU','iPad']);
+    var hCsvCpuC2s=[],hCsvIpadC2s=[];
+    base.filter(function(r){return r.c1==='CPU';}).forEach(function(r){if(hCsvCpuC2s.indexOf(r.c2)===-1)hCsvCpuC2s.push(r.c2);});
+    base.filter(function(r){return r.c1==='iPad';}).forEach(function(r){if(hCsvIpadC2s.indexOf(r.c2)===-1)hCsvIpadC2s.push(r.c2);});
+    hCsvCpuC2s.sort(); hCsvIpadC2s.sort();
+    rows.push(['員工編號'].concat(hCsvCpuC2s.map(function(c){return 'CPU_'+c;})).concat(hCsvIpadC2s.map(function(c){return 'iPad_'+c;})));
     staffList.forEach(function(id){
       var rr=base.filter(function(r){return r.id===id;});
-      rows.push([id,rr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0),
-                    rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0)]);
+      var cells=[id];
+      hCsvCpuC2s.forEach(function(c2){cells.push(rr.filter(function(r){return r.c1==='CPU'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0));});
+      hCsvIpadC2s.forEach(function(c2){cells.push(rr.filter(function(r){return r.c1==='iPad'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0));});
+      rows.push(cells);
     });
   } else if (type==='daily') {
     rows.push(['日期','CPU','iPad','Care']);
