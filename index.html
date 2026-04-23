@@ -2422,9 +2422,9 @@ function loadHistoryFromDrive() {
         }
       }
 
-      /* 日期範圍篩選 */
+      /* 日期範圍篩選：用 fetchFrom（含上季W13補充）而非 dateRange.from */
       if (dateRange) {
-        rows = rows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; });
+        rows = rows.filter(function(r){ return r.date >= fetchFrom && r.date <= dateRange.to; });
       }
 
       /* 歸入 storeMap（以 store 欄位為 key） */
