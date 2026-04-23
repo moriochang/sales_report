@@ -889,7 +889,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
     <div class="panel" id="hWeeklyPanel" style="display:none;margin-bottom:24px">
       <div class="panel-head">
         <span class="ptitle">週數銷售統計</span>
-        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">CPU · iPad · 對比上週增減</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">CPU · iPad · Care · 對比上季同期</span>
       </div>
       <div class="tbl-wrap">
         <table id="hWeeklyTable" style="width:100%;table-layout:fixed">
@@ -1049,7 +1049,7 @@ var QW_PAIRS = [
     ['20270627','FY27Q4 W1'],['20270704','FY27Q4 W2'],['20270711','FY27Q4 W3'],['20270718','FY27Q4 W4'],['20270725','FY27Q4 W5'],['20270801','FY27Q4 W6'],['20270808','FY27Q4 W7'],['20270815','FY27Q4 W8'],['20270822','FY27Q4 W9'],['20270829','FY27Q4 W10'],['20270905','FY27Q4 W11'],['20270912','FY27Q4 W12'],['20270919','FY27Q4 W13']
 ];
 
-var TW_HOL = { '20260101':'元旦','20260217':'春節','20260218':'春節','20260219':'春節','20260220':'春節','20260221':'春節','20260222':'春節','20260228':'和平紀念日','20260404':'兒童節','20260503':'勞動節補假','20260505':'端午節','20260906':'中秋節' };
+var TW_HOL = { '20230101':'開國紀念日', '20230102':'開國紀念日補假', '20230121':'農曆除夕', '20230122':'春節初一', '20230123':'春節初二', '20230124':'春節初三', '20230228':'和平紀念日', '20230404':'兒童節', '20230405':'清明節', '20230622':'端午節', '20230929':'中秋節', '20231010':'國慶日', '20240101':'開國紀念日', '20240209':'農曆除夕', '20240210':'春節初一', '20240211':'春節初二', '20240212':'春節初三', '20240228':'和平紀念日', '20240404':'兒童節/清明節', '20240610':'端午節', '20240917':'中秋節', '20241010':'國慶日', '20250101':'開國紀念日', '20250128':'農曆除夕', '20250129':'春節初一', '20250130':'春節初二', '20250131':'春節初三', '20250228':'和平紀念日', '20250404':'兒童節/清明節', '20250531':'端午節', '20250602':'端午節補假', '20251006':'中秋節', '20251010':'國慶日', '20260101':'開國紀念日', '20260216':'農曆除夕', '20260217':'春節初一', '20260218':'春節初二', '20260219':'春節初三', '20260220':'小年夜補假', '20260227':'和平紀念日補假', '20260228':'和平紀念日', '20260403':'兒童節補假', '20260404':'兒童節', '20260405':'清明節', '20260406':'清明節補假', '20260501':'勞動節', '20260619':'端午節', '20260925':'中秋節', '20260928':'教師節', '20261009':'國慶日補假', '20261010':'國慶日', '20261026':'臺灣光復暨金門古寧頭大捷紀念日補假', '20261225':'行憲紀念日', '20270101':'開國紀念日', '20270205':'農曆除夕', '20270206':'春節初一', '20270207':'春節初二', '20270208':'春節初三', '20270228':'和平紀念日', '20270301':'和平紀念日補假', '20270404':'兒童節', '20270405':'清明節', '20270609':'端午節', '20271010':'國慶日', '20271011':'國慶日補假', '20271014':'中秋節' };
 
 var QW_MAP = (function() {
   var map = {};
@@ -1622,18 +1622,146 @@ function renderExport() {
 
   /* Taiwan 2026 public holidays - 依行政院人事行政總處115年辦公日曆表 (YYYYMMDD) */
   var TW_HOLIDAYS = {
-    '20260101':'元旦',
-    '20260214':'春節','20260215':'春節','20260216':'春節(除夕)',
-    '20260217':'春節(初一)','20260218':'春節(初二)','20260219':'春節(初三)',
-    '20260220':'春節補假','20260221':'春節','20260222':'春節',
-    '20260227':'和平紀念日','20260228':'和平紀念日','20260301':'和平紀念日',
-    '20260403':'兒童節補假','20260404':'兒童節','20260405':'清明節','20260406':'清明節補假',
+    '20200101':'開國紀念日',
+    '20200124':'農曆除夕',
+    '20200125':'春節初一',
+    '20200126':'春節初二',
+    '20200127':'春節初三',
+    '20200228':'和平紀念日',
+    '20200404':'兒童節/清明節',
+    '20200406':'兒童節/清明節補假',
+    '20200625':'端午節',
+    '20201001':'中秋節',
+    '20201010':'國慶日',
+    '20201012':'國慶日補假',
+    '20210101':'開國紀念日',
+    '20210211':'農曆除夕',
+    '20210212':'春節初一',
+    '20210213':'春節初二',
+    '20210214':'春節初三',
+    '20210215':'春節初二補假',
+    '20210228':'和平紀念日',
+    '20210301':'和平紀念日補假',
+    '20210404':'兒童節/清明節',
+    '20210405':'兒童節/清明節補假',
+    '20210614':'端午節',
+    '20210921':'中秋節',
+    '20211010':'國慶日',
+    '20211011':'國慶日補假',
+    '20220101':'開國紀念日',
+    '20220103':'開國紀念日補假',
+    '20220131':'農曆除夕',
+    '20220201':'春節初一',
+    '20220202':'春節初二',
+    '20220203':'春節初三',
+    '20220228':'和平紀念日',
+    '20220404':'兒童節',
+    '20220405':'清明節',
+    '20220603':'端午節',
+    '20220910':'中秋節',
+    '20220912':'中秋節補假',
+    '20221010':'國慶日',
+    '20230101':'開國紀念日',
+    '20230102':'開國紀念日補假',
+    '20230121':'農曆除夕',
+    '20230122':'春節初一',
+    '20230123':'春節初二',
+    '20230124':'春節初三',
+    '20230228':'和平紀念日',
+    '20230404':'兒童節',
+    '20230405':'清明節',
+    '20230622':'端午節',
+    '20230929':'中秋節',
+    '20231010':'國慶日',
+    '20240101':'開國紀念日',
+    '20240209':'農曆除夕',
+    '20240210':'春節初一',
+    '20240211':'春節初二',
+    '20240212':'春節初三',
+    '20240228':'和平紀念日',
+    '20240404':'兒童節/清明節',
+    '20240610':'端午節',
+    '20240917':'中秋節',
+    '20241010':'國慶日',
+    '20250101':'開國紀念日',
+    '20250128':'農曆除夕',
+    '20250129':'春節初一',
+    '20250130':'春節初二',
+    '20250131':'春節初三',
+    '20250228':'和平紀念日',
+    '20250404':'兒童節/清明節',
+    '20250531':'端午節',
+    '20250602':'端午節補假',
+    '20251006':'中秋節',
+    '20251010':'國慶日',
+    '20260101':'開國紀念日',
+    '20260216':'農曆除夕',
+    '20260217':'春節初一',
+    '20260218':'春節初二',
+    '20260219':'春節初三',
+    '20260220':'小年夜補假',
+    '20260227':'和平紀念日補假',
+    '20260228':'和平紀念日',
+    '20260403':'兒童節補假',
+    '20260404':'兒童節',
+    '20260405':'清明節',
+    '20260406':'清明節補假',
     '20260501':'勞動節',
-    '20260619':'端午節','20260620':'端午節','20260621':'端午節',
-    '20260925':'中秋節','20260926':'中秋節','20260927':'中秋節','20260928':'教師節',
-    '20261009':'國慶日','20261010':'國慶日','20261011':'國慶日',
-    '20261024':'台灣光復節','20261025':'台灣光復節','20261026':'台灣光復節補假',
-    '20261225':'行憲紀念日','20261226':'行憲紀念日','20261227':'行憲紀念日'
+    '20260619':'端午節',
+    '20260925':'中秋節',
+    '20260928':'教師節',
+    '20261009':'國慶日補假',
+    '20261010':'國慶日',
+    '20261026':'臺灣光復暨金門古寧頭大捷紀念日補假',
+    '20261225':'行憲紀念日',
+    '20270101':'開國紀念日',
+    '20270205':'農曆除夕',
+    '20270206':'春節初一',
+    '20270207':'春節初二',
+    '20270208':'春節初三',
+    '20270228':'和平紀念日',
+    '20270301':'和平紀念日補假',
+    '20270404':'兒童節',
+    '20270405':'清明節',
+    '20270609':'端午節',
+    '20271010':'國慶日',
+    '20271011':'國慶日補假',
+    '20271014':'中秋節',
+    '20280101':'開國紀念日',
+    '20280103':'開國紀念日補假',
+    '20280125':'農曆除夕',
+    '20280126':'春節初一',
+    '20280127':'春節初二',
+    '20280128':'春節初三',
+    '20280228':'和平紀念日',
+    '20280404':'兒童節/清明節',
+    '20280528':'端午節',
+    '20280529':'端午節補假',
+    '20281002':'中秋節',
+    '20281010':'國慶日',
+    '20290101':'開國紀念日',
+    '20290212':'農曆除夕',
+    '20290213':'春節初一',
+    '20290214':'春節初二',
+    '20290215':'春節初三',
+    '20290228':'和平紀念日',
+    '20290404':'兒童節/清明節',
+    '20290616':'端午節',
+    '20290618':'端午節補假',
+    '20290922':'中秋節',
+    '20290924':'中秋節補假',
+    '20291010':'國慶日',
+    '20300101':'開國紀念日',
+    '20300202':'農曆除夕',
+    '20300203':'春節初一',
+    '20300204':'春節初二',
+    '20300205':'春節初三',
+    '20300228':'和平紀念日',
+    '20300404':'兒童節',
+    '20300405':'清明節',
+    '20300605':'端午節',
+    '20300911':'中秋節',
+    '20301010':'國慶日'
   };
 
   var WEEKDAYS = ['日','一','二','三','四','五','六'];
@@ -2461,22 +2589,19 @@ function hRenderWeekly(base) {
     ? selW.sort(function(a,b){ return parseInt(a.slice(1))-parseInt(b.slice(1)); })
     : allWeekKeys;
 
-  /* 今天日期字串 YYYYMMDD，用來判斷週次是否已過 */
+  /* 今天日期字串 YYYYMMDD */
   var todayStr = (function() {
     var d = new Date();
-    var y = d.getFullYear();
-    var m = ('0'+(d.getMonth()+1)).slice(-2);
-    var dd = ('0'+d.getDate()).slice(-2);
-    return '' + y + m + dd;
+    return '' + d.getFullYear() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
   })();
 
-  /* Aggregate per week，同時標記該週是否有資料（週結束日 <= 今天） */
+  /* Aggregate per week */
   var weekData = {};
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     if (!wd) return;
     var wRows = base.filter(function(r){ return r.date >= wd.start && r.date <= wd.end; });
-    var hasData = wd.end <= todayStr; /* 週已結束才算有完整資料 */
+    var hasData = wd.end <= todayStr;
     weekData[w] = {
       cpu:     wRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0),
       ipad:    wRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0),
@@ -2484,6 +2609,41 @@ function hRenderWeekly(base) {
       hasData: hasData
     };
   });
+
+  /* ── 找上一季 W13 資料，供當季 W1 對比用 ── */
+  var prevQData = {};  /* 只有 W1 會有值 */
+  (function() {
+    /* 找上一季 FYQ */
+    var allQ = [];
+    var seenQ = {};
+    QW_PAIRS.forEach(function(p){
+      var q = p[1].split(' ')[0];
+      if (!seenQ[q]) { seenQ[q] = true; allQ.push(q); }
+    });
+    allQ.sort();
+    var curIdx = allQ.indexOf(histSelFYQ);
+    if (curIdx <= 0) return; /* 沒有上一季 */
+    var prevFYQ = allQ[curIdx - 1];
+
+    /* 只有當季 W1 需要對比上季 W13 */
+    if (weeks.indexOf('W1') === -1) return;
+    var prevWD = (FY_WEEK_DATES[prevFYQ] || {})['W13'];
+    if (!prevWD) return;
+
+    var pRows = histAllRows.filter(function(r){
+      return r.date >= prevWD.start && r.date <= prevWD.end &&
+             (!histCurStaff || r.id === histCurStaff);
+    });
+    var pHasData = prevWD.end <= todayStr;
+    prevQData['W1'] = {
+      cpu:     pRows.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0),
+      ipad:    pRows.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0),
+      care:    pRows.filter(function(r){ return r.c1==='Care'; }).reduce(function(s,r){ return s+r.qty; }, 0),
+      hasData: pHasData,
+      prevW:   'W13',
+      prevFYQ: prevFYQ
+    };
+  })();
 
   var totCpu  = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).cpu||0);  }, 0);
   var totIpad = weeks.reduce(function(s,w){ return s+((weekData[w]||{}).ipad||0); }, 0);
@@ -2520,6 +2680,13 @@ function hRenderWeekly(base) {
         dateDiv.textContent = wd.start.slice(4,6)+'/'+wd.start.slice(6,8)+'–'+wd.end.slice(4,6)+'/'+wd.end.slice(6,8);
         th.appendChild(dateDiv);
       }
+      /* 顯示對應上季週次 */
+      if (prevQData[w]) {
+        var prevDiv = document.createElement('div');
+        prevDiv.style.cssText = 'font-size:7px;color:#475569;font-weight:400;margin-top:1px;white-space:nowrap';
+        prevDiv.textContent = 'vs ' + prevQData[w].prevFYQ + ' ' + prevQData[w].prevW;
+        th.appendChild(prevDiv);
+      }
       th.addEventListener('mouseenter', function(){ this.style.background='rgba(255,255,255,0.06)'; });
       th.addEventListener('mouseleave', function(){ this.style.background=''; });
       (function(week){ th.addEventListener('click', function(){ showWeeklyModal(week); }); })(w);
@@ -2529,21 +2696,30 @@ function hRenderWeekly(base) {
   }
 
   /* ── data cell ── */
-  function dataCell(val, prev, color, hasData, prevHasData) {
+  /* prevQVal: 上季對應週的數值（null 表示無資料） */
+  function dataCell(val, prev, color, hasData, prevHasData, prevQVal, prevQHasData) {
     var badge = '';
-    /* W1 或前一週無資料：顯示 — */
-    if (prev === null || !prevHasData) {
-      badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">—</span>';
-    } else {
-      var diff = val - prev;
+    /* 上季對比（優先顯示） */
+    if (prevQVal !== undefined && prevQVal !== null && prevQHasData) {
+      var diff = val - prevQVal;
       if (diff === 0) {
         badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">±0</span>';
       } else {
         var dc = diff > 0 ? '#16a34a' : '#ef4444';
         badge = '<span style="display:block;font-size:9px;color:'+dc+';font-weight:700;margin-top:2px">'+(diff>0?'▲':'▼')+Math.abs(diff)+'</span>';
       }
+    } else if (prev === null || !prevHasData) {
+      badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">—</span>';
+    } else {
+      /* fallback: 對比上週 */
+      var diff2 = val - prev;
+      if (diff2 === 0) {
+        badge = '<span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">±0</span>';
+      } else {
+        var dc2 = diff2 > 0 ? '#16a34a' : '#ef4444';
+        badge = '<span style="display:block;font-size:9px;color:'+dc2+';font-weight:700;margin-top:2px">'+(diff2>0?'▲':'▼')+Math.abs(diff2)+'</span>';
+      }
     }
-    /* 未來週次數字變淡 */
     var valColor = hasData ? color : 'var(--muted)';
     return '<td style="text-align:center;padding:10px 4px;border-left:1px solid var(--border)">'
       + '<span style="color:'+valColor+';font-weight:700;font-size:14px">'+val+'</span>'
@@ -2554,13 +2730,23 @@ function hRenderWeekly(base) {
   /* ── make row ── */
   function makeRow(label, key, color) {
     var cells = weeks.map(function(w, i) {
-      var val       = (weekData[w] || {})[key] || 0;
-      var hasData   = (weekData[w] || {}).hasData || false;
-      var prev      = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
-      var prevHasData = i > 0 ? ((weekData[weeks[i-1]] || {}).hasData || false) : false;
-      return dataCell(val, prev, color, hasData, prevHasData);
+      var val     = (weekData[w] || {})[key] || 0;
+      var hasData = (weekData[w] || {}).hasData || false;
+
+      /* W1：對比上季 W13；W2 以後：對比前一週 */
+      var pq = prevQData[w]; /* 只有 W1 有值 */
+      if (pq) {
+        /* W1 vs 上季 W13 */
+        var prevQVal     = pq[key] || 0;
+        var prevQHasData = pq.hasData;
+        return dataCell(val, null, color, hasData, false, prevQVal, prevQHasData);
+      } else {
+        /* W2~W13 vs 前一週 */
+        var prev        = i > 0 ? ((weekData[weeks[i-1]] || {})[key] || 0) : null;
+        var prevHasData = i > 0 ? ((weekData[weeks[i-1]] || {}).hasData || false) : false;
+        return dataCell(val, prev, color, hasData, prevHasData, null, false);
+      }
     }).join('');
-    var tot = key === 'cpu' ? totCpu : (key === 'ipad' ? totIpad : totCare);
     return '<tr>'
       + '<td class="mono" style="color:'+color+';font-weight:700;padding:10px 10px;font-size:13px;white-space:nowrap">'+label+'</td>'
       + cells
