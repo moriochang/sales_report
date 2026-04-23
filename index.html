@@ -2630,7 +2630,16 @@ function hRenderWeekly(base) {
     var prevWD = (FY_WEEK_DATES[prevFYQ] || {})['W13'];
     if (!prevWD) return;
 
-    var pRows = histAllRows.filter(function(r){
+    /* 從完整資料池取上季 W13 — histAllRows 只含當季，需從 histStoreMap 或 storeDataMap 取全部 */
+    var fullRows = [];
+    var srcMap = (histStoreOrder && histStoreOrder.length) ? histStoreMap : storeDataMap;
+    var srcOrder = (histStoreOrder && histStoreOrder.length) ? histStoreOrder : storeOrder;
+    srcOrder.forEach(function(s){
+      if (!histCurStore || histCurStore === s) {
+        (srcMap[s] || []).forEach(function(r){ fullRows.push(r); });
+      }
+    });
+    var pRows = fullRows.filter(function(r){
       return r.date >= prevWD.start && r.date <= prevWD.end &&
              (!histCurStaff || r.id === histCurStaff);
     });
