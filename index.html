@@ -2026,6 +2026,8 @@ var histMode       = 'month'; /* 'month' | 'fy' */
 var histSelMonth   = null;    /* '202601' */
 var histSelFYQ     = null;    /* 'FY26Q2' */
 var histSelWeeks   = {};      /* { 'W6': true, 'W7': true } */
+var histDisplayFrom = null;   /* 顯示用的日期起點（不含上季 W13 補充資料） */
+var histDisplayTo   = null;
 
 /* QW lookup – reuse existing QW_MAP built in renderExport, or rebuild here */
 function getQWMap() {
@@ -2288,10 +2290,24 @@ function loadHistoryFromLoaded() {
     if (allStores.indexOf(s) === -1) allStores.push(s);
   });
 
+  /* 若查詢 FY 季度，擴展 from 涵蓋上季 W13 */
+  var loadFrom = dateRange ? dateRange.from : null;
+  if (histMode === 'fy' && histSelFYQ && dateRange) {
+    var allQx = [], seenQx = {};
+    QW_PAIRS.forEach(function(p){ var q=p[1].split(' ')[0]; if(!seenQx[q]){seenQx[q]=true;allQx.push(q);} });
+    allQx.sort();
+    var cIdx = allQx.indexOf(histSelFYQ);
+    if (cIdx > 0) {
+      var pFYQ = allQx[cIdx - 1];
+      var pW13 = (FY_WEEK_DATES[pFYQ] || {})['W13'];
+      if (pW13 && pW13.start < loadFrom) loadFrom = pW13.start;
+    }
+  }
+
   allStores.forEach(function(s) {
     var rows = (storeDataMap[s] || []).concat(histExtraStoreMap[s] || []);
     var filtered = dateRange
-      ? rows.filter(function(r){ return r.date >= dateRange.from && r.date <= dateRange.to; })
+      ? rows.filter(function(r){ return r.date >= loadFrom && r.date <= dateRange.to; })
       : rows.slice();
     if (filtered.length) {
       histStoreMap[s] = filtered;
@@ -2307,6 +2323,8 @@ function loadHistoryFromLoaded() {
     return (!isNaN(na)&&!isNaN(nb)) ? na-nb : a.localeCompare(b,'zh-TW');
   });
   histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
+  histDisplayFrom = dateRange ? dateRange.from : null;
+  histDisplayTo   = dateRange ? dateRange.to   : null;
   hRebuildAllRows();
   /* Rebuild FY quarter chips based on actual loaded data */
   buildFYPicker();
@@ -2332,7 +2350,21 @@ function loadHistoryFromDrive() {
   btn.disabled = true;
   setHistStatus('☁ 連線中…');
 
-  var qp = dateRange ? '&from=' + dateRange.from + '&to=' + dateRange.to : '';
+  /* 若查詢 FY 季度，額外往前抓上季 W13（供週數統計 W1 對比用） */
+  var fetchFrom = dateRange ? dateRange.from : null;
+  if (histMode === 'fy' && histSelFYQ && dateRange) {
+    var allQ2 = [];
+    var seenQ2 = {};
+    QW_PAIRS.forEach(function(p){ var q=p[1].split(' ')[0]; if(!seenQ2[q]){seenQ2[q]=true;allQ2.push(q);} });
+    allQ2.sort();
+    var curIdx2 = allQ2.indexOf(histSelFYQ);
+    if (curIdx2 > 0) {
+      var prevFYQ2 = allQ2[curIdx2 - 1];
+      var prevW13 = (FY_WEEK_DATES[prevFYQ2] || {})['W13'];
+      if (prevW13 && prevW13.start < fetchFrom) fetchFrom = prevW13.start;
+    }
+  }
+  var qp = dateRange ? '&from=' + fetchFrom + '&to=' + dateRange.to : '';
   var archiveUrl = url + '?mode=archive' + qp;
   var currentUrl = url + '?mode=current' + qp;
 
@@ -2430,6 +2462,8 @@ function loadHistoryFromDrive() {
       return (!isNaN(na) && !isNaN(nb)) ? na - nb : a.localeCompare(b, 'zh-TW');
     });
     histCurStore = histStoreOrder.length > 1 ? null : histStoreOrder[0];
+    histDisplayFrom = dateRange ? dateRange.from : null;
+    histDisplayTo   = dateRange ? dateRange.to   : null;
     hRebuildAllRows();
     hBuildStoreChips();
     hBuildChips();
@@ -2479,13 +2513,20 @@ function setHistStatus(msg, cls) {
 
 /* ── History render helpers (mirror of main render) ── */
 function hRebuildAllRows() {
+  /* histStoreMap 可能包含上季 W13 補充資料，顯示時用 histDisplayFrom 篩回當季範圍 */
+  function inDisplayRange(r) {
+    if (!histDisplayFrom && !histDisplayTo) return true;
+    if (histDisplayFrom && r.date < histDisplayFrom) return false;
+    if (histDisplayTo   && r.date > histDisplayTo)   return false;
+    return true;
+  }
   if (histCurStore === null) {
     histAllRows = [];
     histStoreOrder.forEach(function(s){
-      histStoreMap[s].forEach(function(r){ histAllRows.push(r); });
+      histStoreMap[s].forEach(function(r){ if (inDisplayRange(r)) histAllRows.push(r); });
     });
   } else {
-    histAllRows = histStoreMap[histCurStore] ? histStoreMap[histCurStore].slice() : [];
+    histAllRows = (histStoreMap[histCurStore] || []).filter(inDisplayRange);
   }
   histStoreName = histCurStore || '全部門市';
 }
