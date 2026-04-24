@@ -665,7 +665,7 @@ function renderExport(){
       var dr=base.filter(function(r){return r.date===d;}),cpu=dr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0),ipad=dr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0),care=dr.filter(function(r){return r.c1==='Care';}).reduce(function(s,r){return s+r.qty;},0);
       tc+=cpu;ti+=ipad;ta+=care;var red=isRed(d);var qw=dateQW(d);
       var ds=red?'color:#f87171;font-family:"DM Mono",monospace;font-size:12px':'color:#cbd5e1;font-family:"DM Mono",monospace;font-size:12px';
-      return '<tr data-date="'+d+'" style="cursor:pointer" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background=''">'
+      return '<tr data-date="'+d+'" style="cursor:pointer" onmouseenter="this.style.background=\'rgba(255,255,255,0.04)\'" onmouseleave="this.style.background=\'\'">'
         +'<td style="'+ds+'">'+dateLabel(d)+'</td>'
         +'<td style="font-family:'DM Mono',monospace;font-size:13px;color:#cbd5e1">'+qw.q+'</td>'
         +'<td style="font-family:'DM Mono',monospace;font-size:13px;color:#cbd5e1">'+qw.w+'</td>'
@@ -1089,7 +1089,7 @@ function hRenderExport(base){
     var dr=base.filter(function(r){return r.date===d;}),cpu=dr.filter(function(r){return r.c1==='CPU';}).reduce(function(s,r){return s+r.qty;},0),ipad=dr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0),care=dr.filter(function(r){return r.c1==='Care';}).reduce(function(s,r){return s+r.qty;},0);tc+=cpu;ti+=ipad;ta+=care;
     var y=parseInt(d.slice(0,4)),m=parseInt(d.slice(4,6))-1,dd=parseInt(d.slice(6,8)),wd=new Date(y,m,dd).getDay();
     var isRed=wd===0||wd===6||!!TW_HOL[d],qw=QW_MAP[d]||'',qwP=qw.split(' ');
-    return '<tr data-date="'+d+'" style="cursor:pointer" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background=''">'
+    return '<tr data-date="'+d+'" style="cursor:pointer" onmouseenter="this.style.background=\'rgba(255,255,255,0.04)\'" onmouseleave="this.style.background=\'\'">'
       +'<td style="font-family:'DM Mono',monospace;font-size:12px;'+(isRed?'color:#f87171':'color:#cbd5e1')+'">'+d+' ('+WD[wd]+')'+(TW_HOL[d]?' · '+TW_HOL[d]:'')+'</td>'
       +'<td style="font-family:'DM Mono',monospace;font-size:13px;color:#cbd5e1">'+(qwP[0]||'')+'</td>'
       +'<td style="font-family:'DM Mono',monospace;font-size:13px;color:#cbd5e1">'+(qwP[1]||'')+'</td>'
