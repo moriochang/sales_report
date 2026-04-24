@@ -3240,19 +3240,23 @@ function hRenderWeeklyChart(base) {
   var color      = cat === 'CPU' ? '#34d399' : cat === 'iPad' ? '#60a5fa' : '#a78bfa';
   var colorMuted = cat === 'CPU' ? 'rgba(52,211,153,0.35)' : cat === 'iPad' ? 'rgba(96,165,250,0.35)' : 'rgba(167,139,250,0.35)';
 
-  /* Collect all c2 for this cat across all selected weeks */
+  /* Care uses c3 (小分類), others use c2 (中分類) */
+  var dimKey = cat === 'Care' ? 'c3' : 'c2';
+  var dimLabel = cat === 'Care' ? '小分類' : '中分類';
+
+  /* Collect all dimension values for this cat across all selected weeks */
   var c2Set = {};
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     if (!wd) return;
     base.filter(function(r){ return r.c1 === cat && r.date >= wd.start && r.date <= wd.end; })
-        .forEach(function(r){ c2Set[r.c2] = true; });
+        .forEach(function(r){ c2Set[r[dimKey]] = true; });
   });
   var c2List = Object.keys(c2Set).sort();
 
   if (!c2List.length) { panel.style.display = 'none'; return; }
 
-  /* Build data matrix: c2 → { w: qty } */
+  /* Build data matrix: dim → { w: qty } */
   var matrix = {};
   c2List.forEach(function(c2){ matrix[c2] = {}; });
   var weekTotals = {};
@@ -3262,7 +3266,7 @@ function hRenderWeeklyChart(base) {
     var wRows = base.filter(function(r){ return r.c1===cat && r.date>=wd.start && r.date<=wd.end; });
     weekTotals[w] = 0;
     c2List.forEach(function(c2){
-      var v = wRows.filter(function(r){ return r.c2===c2; }).reduce(function(s,r){ return s+r.qty; }, 0);
+      var v = wRows.filter(function(r){ return r[dimKey]===c2; }).reduce(function(s,r){ return s+r.qty; }, 0);
       matrix[c2][w] = v;
       weekTotals[w] += v;
     });
@@ -3276,7 +3280,7 @@ function hRenderWeeklyChart(base) {
 
   /* Build HTML table */
   var html = '<table class="wk-c2-table"><thead><tr>';
-  html += '<th>中分類</th>';
+  html += '<th>' + dimLabel + '</th>';
   weeks.forEach(function(w) {
     var wd = (FY_WEEK_DATES[histSelFYQ] || {})[w];
     var hasData = wd && wd.end <= todayStr;
