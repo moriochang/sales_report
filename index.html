@@ -3304,7 +3304,7 @@ function hRenderWeeklyChart(base) {
       var v = matrix[c2][w] || 0;
       var pct = Math.round(v / maxVal * 100);
       var barColor = hasData ? color : colorMuted;
-      var numColor = hasData ? color : 'var(--muted)';
+      var numColor = (v > 0 && hasData) ? color : 'var(--muted)';
       html += '<td>'
             + '<div style="display:flex;align-items:center;gap:5px">'
             + '<div class="wk-c2-bar-wrap" style="flex:1">'
