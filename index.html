@@ -917,6 +917,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
         <div class="ftabs" id="hWeeklyChartTabs">
           <button class="ftab on" data-cat="CPU"  onclick="switchWeeklyChartCat(this)">CPU</button>
           <button class="ftab"   data-cat="iPad" onclick="switchWeeklyChartCat(this)">iPad</button>
+          <button class="ftab"   data-cat="Care" onclick="switchWeeklyChartCat(this)">Care</button>
         </div>
       </div>
       <div id="hWeeklyChartBody" style="padding:16px;overflow-x:auto"></div>
@@ -3236,8 +3237,8 @@ function hRenderWeeklyChart(base) {
   })();
 
   var cat   = _wkChartCat;
-  var color = cat === 'CPU' ? '#34d399' : '#60a5fa';
-  var colorMuted = cat === 'CPU' ? 'rgba(52,211,153,0.35)' : 'rgba(96,165,250,0.35)';
+  var color      = cat === 'CPU' ? '#34d399' : cat === 'iPad' ? '#60a5fa' : '#a78bfa';
+  var colorMuted = cat === 'CPU' ? 'rgba(52,211,153,0.35)' : cat === 'iPad' ? 'rgba(96,165,250,0.35)' : 'rgba(167,139,250,0.35)';
 
   /* Collect all c2 for this cat across all selected weeks */
   var c2Set = {};
