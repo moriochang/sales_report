@@ -626,8 +626,8 @@ tr:hover td { background: rgba(91,127,255,.04); }
 .wk-c2-table { border-collapse: collapse; min-width: 100%; }
 .wk-c2-table th { padding: 5px 8px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .wk-c2-table th:first-child { text-align: left; min-width: 120px; }
-.wk-c2-table td { padding: 5px 8px; border-top: 1px solid var(--border); vertical-align: middle; }
-.wk-c2-table td:first-child { font-size: 12px; color: var(--text); white-space: nowrap; }
+.wk-c2-table td { padding: 8px 8px; border-top: 1px solid var(--border); vertical-align: middle; }
+.wk-c2-table td:first-child { font-size: 13px; color: var(--text); white-space: nowrap; }
 .wk-c2-bar-wrap { background: var(--surface2); border-radius: 3px; height: 14px; overflow: hidden; min-width: 36px; }
 .wk-c2-bar { height: 100%; border-radius: 3px; min-width: 0; transition: width .3s ease; }
 .wk-c2-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; min-width: 24px; text-align: right; }
@@ -3294,6 +3294,14 @@ function hRenderWeeklyChart(base) {
     weeks.forEach(function(w){ if (matrix[c2][w] > maxVal) maxVal = matrix[c2][w]; });
   });
 
+  /* Max value per week (for highlighting top cell per column) */
+  var maxPerWeek = {};
+  weeks.forEach(function(w){
+    var m = 0;
+    c2List.forEach(function(c2){ if((matrix[c2][w]||0) > m) m = matrix[c2][w]||0; });
+    maxPerWeek[w] = m;
+  });
+
   /* Build HTML table */
   var html = '<table class="wk-c2-table"><thead><tr>';
   html += '<th>' + dimLabel + '</th>';
@@ -3319,8 +3327,11 @@ function hRenderWeeklyChart(base) {
       var hasData = wd && wd.end <= todayStr;
       var v = matrix[c2][w] || 0;
       var pct = Math.round(v / maxVal * 100);
-      var barColor = hasData ? color : colorMuted;
-      var numColor = (v > 0 && hasData) ? color : 'var(--muted)';
+      var isWeekMax = hasData && v > 0 && v === maxPerWeek[w];
+      var brightColor     = cat === 'CPU' ? '#6fffc0' : cat === 'iPad' ? '#93d0ff' : '#d4bbff';
+      var brightColorBar  = cat === 'CPU' ? '#6fffc0' : cat === 'iPad' ? '#93d0ff' : '#d4bbff';
+      var barColor  = hasData ? (isWeekMax ? brightColorBar : color) : colorMuted;
+      var numColor  = (v > 0 && hasData) ? (isWeekMax ? brightColor : color) : 'var(--muted)';
       html += '<td>'
             + '<div style="display:flex;align-items:center;gap:5px">'
             + '<div class="wk-c2-bar-wrap" style="flex:1">'
