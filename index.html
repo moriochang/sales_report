@@ -627,7 +627,7 @@ tr:hover td { background: rgba(91,127,255,.04); }
 .wk-c2-table th { padding: 5px 8px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .wk-c2-table th:first-child { text-align: left; min-width: 120px; }
 .wk-c2-table td { padding: 8px 8px; border-top: 1px solid var(--border); vertical-align: middle; }
-.wk-c2-table td:first-child { font-size: 13px; color: var(--text); white-space: nowrap; }
+.wk-c2-table td:first-child { font-size: 12.5px; color: var(--text); white-space: nowrap; }
 .wk-c2-bar-wrap { background: var(--surface2); border-radius: 3px; height: 14px; overflow: hidden; min-width: 36px; }
 .wk-c2-bar { height: 100%; border-radius: 3px; min-width: 0; transition: width .3s ease; }
 .wk-c2-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; min-width: 24px; text-align: right; }
@@ -3328,8 +3328,8 @@ function hRenderWeeklyChart(base) {
       var v = matrix[c2][w] || 0;
       var pct = Math.round(v / maxVal * 100);
       var isWeekMax = hasData && v > 0 && v === maxPerWeek[w];
-      var brightColor     = cat === 'CPU' ? '#6fffc0' : cat === 'iPad' ? '#93d0ff' : '#d4bbff';
-      var brightColorBar  = cat === 'CPU' ? '#6fffc0' : cat === 'iPad' ? '#93d0ff' : '#d4bbff';
+      var brightColor     = cat === 'CPU' ? '#ffffff' : cat === 'iPad' ? '#ffffff' : '#ffffff';
+      var brightColorBar  = cat === 'CPU' ? '#a7f3d0' : cat === 'iPad' ? '#bae6fd' : '#ddd6fe';
       var barColor  = hasData ? (isWeekMax ? brightColorBar : color) : colorMuted;
       var numColor  = (v > 0 && hasData) ? (isWeekMax ? brightColor : color) : 'var(--muted)';
       html += '<td>'
