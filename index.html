@@ -1592,11 +1592,11 @@ function renderExport() {
   base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
     if (ipadC2s.indexOf(r.c2)===-1) ipadC2s.push(r.c2);
   });
-  cpuC2s.sort((function(a,b){
-    if(a==='MBA Neo') return -1;
-    if(b==='MBA Neo') return 1;
-    return a.localeCompare(b,'zh-TW');
-  })); ipadC2s.sort();
+  cpuC2s.sort(function(a,b){
+      if(a==='MBA Neo') return -1;
+      if(b==='MBA Neo') return 1;
+      return a.localeCompare(b,'zh-TW');
+    }); ipadC2s.sort();
 
   /* Build dynamic header */
   var ciHead = document.getElementById('exp-ci-head');
@@ -1978,14 +1978,14 @@ function exportCSV(type) {
     base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
       if (csvIpadC2s.indexOf(r.c2)===-1) csvIpadC2s.push(r.c2);
     });
-    csvCpuC2s.sort((function(a,b){
-    if(a==='MBA Neo') return -1;
-    if(b==='MBA Neo') return 1;
-    return a.localeCompare(b,'zh-TW');
-  })); csvIpadC2s.sort();
+    csvCpuC2s.sort(function(a,b){
+      if(a==='MBA Neo') return -1;
+      if(b==='MBA Neo') return 1;
+      return a.localeCompare(b,'zh-TW');
+    });
+    csvIpadC2s.sort();
     rows.push(['員工編號'].concat(csvCpuC2s.map(function(c){ return 'CPU_'+c; }))
-                          .concat(csvIpadC2s.map(function(c){ return 'iPad_'+c; }))
-                          ));
+                          .concat(csvIpadC2s.map(function(c){ return 'iPad_'+c; })));
     staffList.forEach(function(id) {
       var rr = base.filter(function(r){ return r.id === id; });
       var cells = [id];
@@ -2876,11 +2876,11 @@ function hRenderExport(base) {
   base.filter(function(r){ return r.c1==='iPad'; }).forEach(function(r){
     if (hIpadC2s.indexOf(r.c2)===-1) hIpadC2s.push(r.c2);
   });
-  hCpuC2s.sort((function(a,b){
-    if(a==='MBA Neo') return -1;
-    if(b==='MBA Neo') return 1;
-    return a.localeCompare(b,'zh-TW');
-  })); hIpadC2s.sort();
+  hCpuC2s.sort(function(a,b){
+      if(a==='MBA Neo') return -1;
+      if(b==='MBA Neo') return 1;
+      return a.localeCompare(b,'zh-TW');
+    }); hIpadC2s.sort();
 
   var hCiHead = document.getElementById('hexp-ci-head');
   if (hCiHead) {
@@ -2999,12 +2999,12 @@ function hExportCSV(type) {
     var hCsvCpuC2s=[],hCsvIpadC2s=[];
     base.filter(function(r){return r.c1==='CPU';}).forEach(function(r){if(hCsvCpuC2s.indexOf(r.c2)===-1)hCsvCpuC2s.push(r.c2);});
     base.filter(function(r){return r.c1==='iPad';}).forEach(function(r){if(hCsvIpadC2s.indexOf(r.c2)===-1)hCsvIpadC2s.push(r.c2);});
-    hCsvCpuC2s.sort((function(a,b){
-    if(a==='MBA Neo') return -1;
-    if(b==='MBA Neo') return 1;
-    return a.localeCompare(b,'zh-TW');
-  })); hCsvIpadC2s.sort();
-    rows.push(['員工編號'].concat(hCsvCpuC2s.map(function(c){return 'CPU_'+c;})).concat(hCsvIpadC2s.map(function(c){return 'iPad_'+c;}))));
+    hCsvCpuC2s.sort(function(a,b){
+      if(a==='MBA Neo') return -1;
+      if(b==='MBA Neo') return 1;
+      return a.localeCompare(b,'zh-TW');
+    }); hCsvIpadC2s.sort();
+    rows.push(['員工編號'].concat(hCsvCpuC2s.map(function(c){return 'CPU_'+c;})).concat(hCsvIpadC2s.map(function(c){return 'iPad_'+c;})));
     staffList.forEach(function(id){
       var rr=base.filter(function(r){return r.id===id;});
       var cells=[id];
