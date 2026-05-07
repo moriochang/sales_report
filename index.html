@@ -2072,7 +2072,7 @@ function exportCSV(type) {
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href     = url;
-  a.download = (type === 'cpu-ipad' ? 'cpu_ipad_summary' : 'care_summary') + '.csv';
+  a.download = (type === 'cpu-ipad' ? 'cpu_ipad_summary' : type === 'ci-total' ? 'CPU_iPad_summary' : 'care_summary') + '.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -3038,7 +3038,7 @@ function hExportCSV(type) {
   var csv=rows.map(function(r){return r.map(function(v){var s=String(v);return s.indexOf(',')>-1||s.indexOf('"')>-1?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   var u=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=u;a.download='history_'+type+'.csv';a.click();URL.revokeObjectURL(u);
+  var a=document.createElement('a');a.href=u;a.download=(type==='ci-total'?'CPU_iPad_summary':'history_'+type)+'.csv';a.click();URL.revokeObjectURL(u);
 }
 
 /* ══ Daily Detail Modal ══ */
