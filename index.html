@@ -777,6 +777,23 @@ tr:hover td { background: rgba(91,127,255,.04); }
           </table>
         </div>
       </div>
+      <!-- CPU / iPad 總計 -->
+      <div class="export-panel">
+        <div class="export-panel-head">
+          <span class="etitle">CPU / iPad 總計</span>
+          <button class="export-btn" onclick="exportCSV('ci-total')">⬇ 匯出 CSV</button>
+        </div>
+        <div class="export-tbl-wrap" style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th style="color:#fff;font-size:12px">員工編號</th>
+              <th style="color:var(--cpu);font-size:12px;text-align:center">CPU</th>
+              <th style="color:var(--ipad);font-size:12px;text-align:center">iPad</th>
+            </tr></thead>
+            <tbody id="exp-ci-total-body"></tbody>
+          </table>
+        </div>
+      </div>
       <!-- Table 2: Care per staff x short name -->
       <div class="export-panel">
         <div class="export-panel-head">
@@ -970,6 +987,23 @@ tr:hover td { background: rgba(91,127,255,.04); }
         </div>
         <div class="export-tbl-wrap" style="overflow-x:auto">
           <table><thead id="hexp-ci-head"><tr><th style="color:#fff;font-size:12px">員工編號</th></tr></thead><tbody id="hexp-ci-body"></tbody></table>
+        </div>
+      </div>
+      <!-- CPU / iPad 總計 -->
+      <div class="export-panel">
+        <div class="export-panel-head">
+          <span class="etitle">CPU / iPad 總計</span>
+          <button class="export-btn" onclick="hExportCSV('ci-total')">⬇ CSV</button>
+        </div>
+        <div class="export-tbl-wrap" style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th style="color:#fff;font-size:12px">員工編號</th>
+              <th style="color:var(--cpu);font-size:12px;text-align:center">CPU</th>
+              <th style="color:var(--ipad);font-size:12px;text-align:center">iPad</th>
+            </tr></thead>
+            <tbody id="hexp-ci-total-body"></tbody>
+          </table>
         </div>
       </div>
       <div class="export-panel">
@@ -1572,14 +1606,14 @@ function renderExport() {
       headHtml += '<th colspan="'+cpuC2s.length+'" style="color:var(--cpu);font-size:11px;text-align:center;border-right:1px solid var(--border)">CPU</th>';
     }
     if (ipadC2s.length) {
-      headHtml += '<th colspan="'+ipadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center">iPad</th>';
+      headHtml += '<th colspan="'+ipadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center;border-right:1px solid var(--border)">iPad</th>';
     }
     headHtml += '</tr><tr><th style="border-right:2px solid var(--border)"></th>';
     cpuC2s.forEach(function(c2, i){
       headHtml += '<th style="color:var(--cpu);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===cpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">' + c2 + '</th>';
     });
-    ipadC2s.forEach(function(c2){
-      headHtml += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px">' + c2 + '</th>';
+    ipadC2s.forEach(function(c2, i){
+      headHtml += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===ipadC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+c2+'</th>';
     });
     headHtml += '</tr>';
     ciHead.innerHTML = headHtml;
@@ -1601,6 +1635,21 @@ function renderExport() {
     });
     return '<tr><td class="mono accent" style="border-right:2px solid var(--border)">' + id + '</td>' + cells + '</tr>';
   }).join('');
+
+  /* --- CPU / iPad 總計 --- */
+  var ciTotalBody = document.getElementById('exp-ci-total-body');
+  if (ciTotalBody) {
+    ciTotalBody.innerHTML = staffList.map(function(id) {
+      var rr = base.filter(function(r){ return r.id === id; });
+      var cpu  = rr.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0);
+      var ipad = rr.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0);
+      return '<tr>'
+        + '<td class="mono accent">' + id + '</td>'
+        + (cpu  ? '<td class="qty" style="color:var(--cpu);text-align:center">'  + cpu  + '</td>' : '<td class="qty" style="color:#94a3b8;text-align:center">0</td>')
+        + (ipad ? '<td class="qty" style="color:var(--ipad);text-align:center">' + ipad + '</td>' : '<td class="qty" style="color:#94a3b8;text-align:center">0</td>')
+        + '</tr>';
+    }).join('');
+  }
 
   /* --- Table 2: Care per staff x Short Name pivot --- */
   var careRows = base.filter(function(r){ return r.c1 === 'Care'; });
@@ -1935,7 +1984,8 @@ function exportCSV(type) {
     return a.localeCompare(b,'zh-TW');
   })); csvIpadC2s.sort();
     rows.push(['員工編號'].concat(csvCpuC2s.map(function(c){ return 'CPU_'+c; }))
-                          .concat(csvIpadC2s.map(function(c){ return 'iPad_'+c; })));
+                          .concat(csvIpadC2s.map(function(c){ return 'iPad_'+c; }))
+                          ));
     staffList.forEach(function(id) {
       var rr = base.filter(function(r){ return r.id === id; });
       var cells = [id];
@@ -1946,6 +1996,14 @@ function exportCSV(type) {
         cells.push(rr.filter(function(r){ return r.c1==='iPad'&&r.c2===c2; }).reduce(function(s,r){ return s+r.qty; },0));
       });
       rows.push(cells);
+    });
+  } else if (type === 'ci-total') {
+    rows.push(['員工編號','CPU','iPad']);
+    staffList.forEach(function(id) {
+      var rr = base.filter(function(r){ return r.id === id; });
+      var cpu  = rr.filter(function(r){ return r.c1==='CPU';  }).reduce(function(s,r){ return s+r.qty; }, 0);
+      var ipad = rr.filter(function(r){ return r.c1==='iPad'; }).reduce(function(s,r){ return s+r.qty; }, 0);
+      rows.push([id, cpu, ipad]);
     });
   } else if (type === 'daily') {
     rows.push(['日期','CPU','iPad','Care']);
@@ -2828,10 +2886,10 @@ function hRenderExport(base) {
   if (hCiHead) {
     var hh = '<tr><th style="color:#fff;font-size:12px;border-right:2px solid var(--border)">員工編號</th>';
     if (hCpuC2s.length) hh += '<th colspan="'+hCpuC2s.length+'" style="color:var(--cpu);font-size:11px;text-align:center;border-right:1px solid var(--border)">CPU</th>';
-    if (hIpadC2s.length) hh += '<th colspan="'+hIpadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center">iPad</th>';
+    if (hIpadC2s.length) hh += '<th colspan="'+hIpadC2s.length+'" style="color:var(--ipad);font-size:11px;text-align:center;border-right:1px solid var(--border)">iPad</th>';
     hh += '</tr><tr><th style="border-right:2px solid var(--border)"></th>';
     hCpuC2s.forEach(function(c2,i){ hh += '<th style="color:var(--cpu);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===hCpuC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+c2+'</th>'; });
-    hIpadC2s.forEach(function(c2){ hh += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px">'+c2+'</th>'; });
+    hIpadC2s.forEach(function(c2,i){ hh += '<th style="color:var(--ipad);font-size:10px;white-space:nowrap;padding:4px 10px'+(i===hIpadC2s.length-1?';border-right:1px solid var(--border)':'')+'">'+c2+'</th>'; });
     hh += '</tr>';
     hCiHead.innerHTML = hh;
   }
@@ -2851,6 +2909,21 @@ function hRenderExport(base) {
     });
     return '<tr><td class="mono accent" style="border-right:2px solid var(--border)">'+id+'</td>'+cells+'</tr>';
   }).join('');
+
+  /* --- hexp CPU / iPad 總計 --- */
+  var hciTotalBody = document.getElementById('hexp-ci-total-body');
+  if (hciTotalBody) {
+    hciTotalBody.innerHTML = staffList.map(function(id){
+      var rr=base.filter(function(r){return r.id===id;});
+      var cpu =rr.filter(function(r){return r.c1==='CPU'; }).reduce(function(s,r){return s+r.qty;},0);
+      var ipad=rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
+      return '<tr>'
+        +'<td class="mono accent">'+id+'</td>'
+        +(cpu  ?'<td class="qty" style="color:var(--cpu);text-align:center">'+cpu+'</td>'  :'<td class="qty" style="color:#94a3b8;text-align:center">0</td>')
+        +(ipad ?'<td class="qty" style="color:var(--ipad);text-align:center">'+ipad+'</td>':'<td class="qty" style="color:#94a3b8;text-align:center">0</td>')
+        +'</tr>';
+    }).join('');
+  }
 
   /* Care pivot */
   var careRows=base.filter(function(r){return r.c1==='Care';});
@@ -2931,13 +3004,21 @@ function hExportCSV(type) {
     if(b==='MBA Neo') return 1;
     return a.localeCompare(b,'zh-TW');
   })); hCsvIpadC2s.sort();
-    rows.push(['員工編號'].concat(hCsvCpuC2s.map(function(c){return 'CPU_'+c;})).concat(hCsvIpadC2s.map(function(c){return 'iPad_'+c;})));
+    rows.push(['員工編號'].concat(hCsvCpuC2s.map(function(c){return 'CPU_'+c;})).concat(hCsvIpadC2s.map(function(c){return 'iPad_'+c;}))));
     staffList.forEach(function(id){
       var rr=base.filter(function(r){return r.id===id;});
       var cells=[id];
       hCsvCpuC2s.forEach(function(c2){cells.push(rr.filter(function(r){return r.c1==='CPU'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0));});
       hCsvIpadC2s.forEach(function(c2){cells.push(rr.filter(function(r){return r.c1==='iPad'&&r.c2===c2;}).reduce(function(s,r){return s+r.qty;},0));});
       rows.push(cells);
+    });
+  } else if (type==='ci-total') {
+    rows.push(['員工編號','CPU','iPad']);
+    staffList.forEach(function(id){
+      var rr=base.filter(function(r){return r.id===id;});
+      var cpu =rr.filter(function(r){return r.c1==='CPU'; }).reduce(function(s,r){return s+r.qty;},0);
+      var ipad=rr.filter(function(r){return r.c1==='iPad';}).reduce(function(s,r){return s+r.qty;},0);
+      rows.push([id,cpu,ipad]);
     });
   } else if (type==='daily') {
     rows.push(['日期','CPU','iPad','Care']);
