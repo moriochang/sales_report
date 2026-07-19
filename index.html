@@ -633,6 +633,14 @@ tr:hover td { background: rgba(91,127,255,.04); }
 .wk-c2-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; min-width: 24px; text-align: right; }
 .wk-c2-total-row td { border-top: 2px solid var(--border); font-weight: 700; }
 
+/* ── Store sidebar ── */
+.store-sidebar{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:900;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 10px;display:none;flex-direction:column;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.45);max-height:80vh;overflow-y:auto}
+.store-sidebar .ss-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted);text-align:center;margin-bottom:2px}
+.ss-btn{min-width:56px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;font-family:'DM Mono',monospace;text-align:center}
+.ss-btn:hover{border-color:var(--accent);color:#fff}
+.ss-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media(max-width:1400px){.store-sidebar{display:none !important}}
+
 /* range label */
 .range-label {
   display: inline-block;
@@ -651,6 +659,12 @@ tr:hover td { background: rgba(91,127,255,.04); }
 </head>
 <body>
 <div class="container">
+  <!-- Store sidebar (fixed left) -->
+  <div class="store-sidebar" id="storeSidebar">
+    <div class="ss-title">門市</div>
+    <div id="storeSidebarBtns" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
 
   <div class="header">
     <div>
@@ -1404,6 +1418,7 @@ function buildStoreChips() {
     c.addEventListener('click', function() { pickStore(s); });
     el.appendChild(c);
   });
+  buildStoreSidebar();
 }
 
 function pickStore(s) {
@@ -2077,6 +2092,32 @@ function exportCSV(type) {
   URL.revokeObjectURL(url);
 }
 
+/* ── Store sidebar (fixed left, syncs with STORE chips) ── */
+function buildStoreSidebar(){
+  var sb=document.getElementById('storeSidebar'),btns=document.getElementById('storeSidebarBtns');
+  if(!sb||!btns)return;
+  var isHist=document.getElementById('historyPanel')&&document.getElementById('historyPanel').style.display!=='none';
+  var order=isHist?histStoreOrder:storeOrder;
+  var cur  =isHist?histCurStore:curStore;
+  if(!order||!order.length){sb.style.display='none';return;}
+  btns.innerHTML='';
+  var allBtn=document.createElement('button');
+  allBtn.className='ss-btn'+(cur===null?' on':'');
+  allBtn.textContent='All';
+  allBtn.addEventListener('click',function(){isHist?hPickStore(null):pickStore(null);});
+  btns.appendChild(allBtn);
+  order.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='ss-btn'+(cur===s?' on':'');
+    var num=(s.match(/\d+/)||[s])[0];
+    b.textContent=num;
+    b.title=s;
+    b.addEventListener('click',function(){isHist?hPickStore(s):pickStore(s);});
+    btns.appendChild(b);
+  });
+  sb.style.display='flex';
+}
+
 function mkEl(tag, cls, html) {
   var el = document.createElement(tag);
   el.className = cls;
@@ -2094,6 +2135,7 @@ function switchMode(mode) {
   document.getElementById('modeCurrentBtn').classList.toggle('on',  isCurrent);
   document.getElementById('modeHistBtn').classList.toggle('on',    !isCurrent);
   if (!isCurrent && !histInitDone) initHistoryPanel();
+  buildStoreSidebar();
 }
 
 /* ══════════════════════════════════════════
@@ -2593,6 +2635,7 @@ function hBuildStoreChips() {
     c.addEventListener('click', function(){ hPickStore(s); });
     el.appendChild(c);
   });
+  buildStoreSidebar();
 }
 
 function hPickStore(s) {
